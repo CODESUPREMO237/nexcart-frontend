@@ -283,3 +283,7 @@ Your Name - [@your_twitter](https://twitter.com/your_twitter)
 **Need help?** Open an issue or contact us at support@nexcart.com
 
 **Live Demo:** https://your-app.vercel.app
+
+## Architecture
+See [docs/architecture.md](docs/architecture.md) for clean architecture layers, folder structure, testing strategy, and Docker guidance.
+
