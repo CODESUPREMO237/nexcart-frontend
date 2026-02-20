@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Check, X } from 'lucide-react'
+import { Loader2, Check, X, Eye, EyeOff } from 'lucide-react'
 import useAuthStore from '@/store/authStore'
 import { ROUTES } from '@/lib/constants'
 import { loginWithGoogle,loginWithDiscord, loginWithMicrosoft } from '@/lib/auth'
@@ -30,6 +30,8 @@ export default function RegisterPage() {
     hasNumber: false,
     hasLetter: false,
   })
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -125,16 +127,28 @@ export default function RegisterPage() {
 
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            placeholder="••••••••"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-          />
+          <div className="relative">
+            <Input
+              id="password"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              disabled={isLoading}
+              className="pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              disabled={isLoading}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
           
           {formData.password && (
             <div className="space-y-1 mt-2">
@@ -174,16 +188,28 @@ export default function RegisterPage() {
 
         <div className="space-y-2">
           <Label htmlFor="password_confirm">Confirm Password</Label>
-          <Input
-            id="password_confirm"
-            name="password_confirm"
-            type="password"
-            placeholder="••••••••"
-            value={formData.password_confirm}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-          />
+          <div className="relative">
+            <Input
+              id="password_confirm"
+              name="password_confirm"
+              type={showConfirmPassword ? 'text' : 'password'}
+              placeholder="••••••••"
+              value={formData.password_confirm}
+              onChange={handleChange}
+              required
+              disabled={isLoading}
+              className="pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+              className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+              aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+              disabled={isLoading}
+            >
+              {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
           {formData.password_confirm && (
             <p className={`text-xs ${passwordsMatch ? 'text-green-500' : 'text-red-500'}`}>
               {passwordsMatch ? 'Passwords match' : 'Passwords do not match'}
