@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import useAuthStore from '@/store/authStore'
 import useCartStore from '@/store/cartStore'
@@ -17,6 +17,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import RecentlyViewed, { trackProductView } from '@/components/features/RecentlyViewed'
 
+const fcfa = (n) =>
+  new Intl.NumberFormat('fr-CM', { style: 'currency', currency: 'XAF', maximumFractionDigits: 0 }).format(n)
+
 export default function ProductDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -32,14 +35,7 @@ export default function ProductDetailPage() {
   const [reviewText, setReviewText] = useState('')
   const [rating, setRating] = useState(5)
 
-  useEffect(() => {
-    if (params.id) {
-      loadProductData()
-      trackProductView(params.id) 
-    }
-  }, [params.id])
-
-  const loadProductData = async () => {
+  const loadProductData = useCallback(async () => {
     try {
       const [productData, reviewsData] = await Promise.all([
         api.getProduct(params.id),
@@ -64,7 +60,14 @@ export default function ProductDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [params.id, toast])
+
+  useEffect(() => {
+    if (params.id) {
+      loadProductData()
+      trackProductView(params.id)
+    }
+  }, [params.id, loadProductData])
 
   const handleAddToCart = async () => {
     if (!isAuthenticated) {
@@ -295,15 +298,15 @@ export default function ProductDetailPage() {
           <div className="border-t border-b py-4">
             <div className="flex items-baseline gap-3 mb-2">
               <span className="text-4xl font-bold text-primary">
-                ${product.price}
+                {fcfa(product.price)}
               </span>
               {product.compare_price && (
                 <>
                   <span className="text-2xl text-muted-foreground line-through">
-                    ${product.compare_price}
+                    {fcfa(product.compare_price)}
                   </span>
                   <Badge variant="destructive">
-                    Save ${(parseFloat(product.compare_price) - parseFloat(product.price)).toFixed(2)}
+                    Économisez {fcfa(parseFloat(product.compare_price) - parseFloat(product.price))}
                   </Badge>
                 </>
               )}
@@ -377,7 +380,7 @@ export default function ProductDetailPage() {
             <div className="flex flex-col items-center text-center">
               <Truck className="h-8 w-8 text-primary mb-2" />
               <span className="text-sm font-medium">Free Shipping</span>
-              <span className="text-xs text-muted-foreground">On orders $50+</span>
+              <span className="text-xs text-muted-foreground">Commandes {'>'} 25 000 FCFA</span>
             </div>
             <div className="flex flex-col items-center text-center">
               <Shield className="h-8 w-8 text-primary mb-2" />
@@ -518,7 +521,7 @@ export default function ProductDetailPage() {
                       {relatedProduct.name}
                     </h3>
                     <p className="text-lg font-bold text-primary">
-                      ${relatedProduct.price}
+                      {fcfa(relatedProduct.price)}
                     </p>
                   </CardContent>
                 </Link>

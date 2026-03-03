@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Layers, ArrowRight, Grid3x3 } from 'lucide-react'
 import { toNumber } from '@/lib/utils/format'; // Add this import
+import Image from 'next/image'
 
 export default function CategoriesPage() {
   const router = useRouter()
@@ -85,10 +86,12 @@ export default function CategoriesPage() {
               <CardHeader className="p-0">
                 <div className="relative h-56 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent overflow-hidden">
                   {category.image ? (
-                    <img
+                                        <Image
                       src={category.image}
                       alt={category.name}
+                      fill
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary to-primary/60">
@@ -130,7 +133,7 @@ export default function CategoriesPage() {
       {/* CTA Section */}
       {categories.length > 0 && (
         <div className="mt-16 text-center bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-lg p-12">
-          <h2 className="text-3xl font-bold mb-4">Can't find what you're looking for?</h2>
+          <h2 className="text-3xl font-bold mb-4">Can&apos;t find what you&apos;re looking for?</h2>
           <p className="text-lg text-muted-foreground mb-6">
             Browse all our products or use the search feature
           </p>
@@ -147,3 +150,4 @@ export default function CategoriesPage() {
     </div>
   )
 }
+

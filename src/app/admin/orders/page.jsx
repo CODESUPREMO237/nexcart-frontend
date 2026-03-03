@@ -36,6 +36,7 @@ import {
   XCircle
 } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
+import Image from 'next/image'
 
 export default function AdminOrdersPage() {
   const router = useRouter()
@@ -352,10 +353,12 @@ export default function AdminOrdersPage() {
                     <div key={index} className="flex items-center gap-4 bg-gray-50 rounded-lg p-4">
                       <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
                         {item.product?.image ? (
-                          <img 
-                            src={item.product.image} 
+                                                    <Image
+                            src={item.product.image}
                             alt={item.product.name}
+                            fill
                             className="w-full h-full object-cover"
+                            unoptimized
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">

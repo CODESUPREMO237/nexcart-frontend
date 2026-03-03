@@ -10,12 +10,15 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata = {
   title: 'NexCart - Smart E-Commerce Platform',
   description: 'AI-powered shopping experience with personalized recommendations',
+  other: {
+    google: 'notranslate',
+  },
 }
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className} suppressHydrationWarning>
+    <html lang="en" translate="no" className="notranslate" suppressHydrationWarning>
+      <body className={`${inter.className} notranslate`} suppressHydrationWarning>
         <Providers>
           <div className="flex min-h-screen flex-col">
             <Navbar />

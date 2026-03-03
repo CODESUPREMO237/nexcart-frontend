@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { X, Star, ShoppingCart, Heart } from 'lucide-react'
+import Image from 'next/image'
 
 // Mock API - replace with your actual API
 const mockProducts = [
@@ -111,15 +112,17 @@ export default function ProductComparison() {
                   <Card key={product.id} className="group cursor-pointer hover:shadow-lg transition-shadow">
                     <div onClick={() => addProduct(product)}>
                       <div className="relative aspect-square overflow-hidden rounded-t-lg bg-muted">
-                        <img
+                                                    <Image
                           src={product.featured_image}
                           alt={product.name}
+                          fill
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                          unoptimized
                         />
                       </div>
                       <CardContent className="p-4">
                         <h3 className="font-semibold mb-2 line-clamp-2">{product.name}</h3>
-                        <p className="text-lg font-bold text-blue-600">${product.price}</p>
+                        <p className="text-lg font-bold text-blue-600">{Number(product.price || 0).toLocaleString('fr-CM')} FCFA</p>
                       </CardContent>
                     </div>
                   </Card>
@@ -158,10 +161,12 @@ export default function ProductComparison() {
                             <X className="h-4 w-4" />
                           </Button>
                           <div className="aspect-square w-32 mx-auto mb-3 overflow-hidden rounded-lg">
-                            <img
+                            <Image
                               src={product.featured_image}
                               alt={product.name}
+                              fill
                               className="w-full h-full object-cover"
+                              unoptimized
                             />
                           </div>
                           <h3 className="font-semibold mb-2 text-sm">{product.name}</h3>
@@ -177,11 +182,11 @@ export default function ProductComparison() {
                     {selectedProducts.map(product => (
                       <td key={product.id} className="p-4 border-b border-l text-center">
                         <div className="text-2xl font-bold text-blue-600">
-                          ${product.price}
+                          {Number(product.price || 0).toLocaleString('fr-CM')} FCFA
                         </div>
                         {product.compare_price && (
                           <div className="text-sm text-gray-500 line-through">
-                            ${product.compare_price}
+                            {Number(product.compare_price || 0).toLocaleString('fr-CM')} FCFA
                           </div>
                         )}
                       </td>

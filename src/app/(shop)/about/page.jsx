@@ -23,7 +23,7 @@ export default function AboutPage() {
         <ul className="list-disc pl-6 mb-6 space-y-2">
           <li>AI-powered product recommendations tailored to your preferences</li>
           <li>Secure and fast checkout process</li>
-          <li>Free shipping on orders over $50</li>
+          <li>Free shipping on orders over 50 FCFA</li>
           <li>30-day hassle-free returns</li>
           <li>24/7 customer support</li>
           <li>Wide selection of quality products</li>

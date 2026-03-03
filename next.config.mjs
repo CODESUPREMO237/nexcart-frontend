@@ -15,11 +15,12 @@ const nextConfig = {
   
   // Proxy backend requests
   async rewrites() {
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
     return [
       {
         source: '/api/:path*',
-        // Use 'backend' (the docker service name) instead of 'localhost'
-        destination: 'http://backend:8000/api/:path*',
+        // Uses BACKEND_URL env var: set to 'http://backend:8000' in Docker, defaults to localhost for local dev
+        destination: `${backendUrl}/api/:path*`,
       },
     ];
   },

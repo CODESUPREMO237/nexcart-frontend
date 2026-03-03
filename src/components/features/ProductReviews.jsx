@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -27,6 +27,7 @@ import {
 } from 'lucide-react'
 import useAuthStore from '@/store/authStore'
 import api from '@/lib/api'
+import Image from 'next/image'
 
 export default function ProductReviews({ productId }) {
   const { user, isAuthenticated } = useAuthStore()
@@ -39,11 +40,7 @@ export default function ProductReviews({ productId }) {
   const [sortBy, setSortBy] = useState('recent')
   const [filterRating, setFilterRating] = useState(0)
 
-  useEffect(() => {
-    fetchReviews()
-  }, [productId])
-
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       setLoading(true)
       const response = await api.get(`/products/${productId}/reviews/`)
@@ -53,7 +50,11 @@ export default function ProductReviews({ productId }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [productId])
+
+  useEffect(() => {
+    fetchReviews()
+  }, [fetchReviews])
 
   const handleSubmitReview = async (e) => {
     e.preventDefault()
@@ -248,7 +249,7 @@ export default function ProductReviews({ productId }) {
                 <div className="flex items-start gap-4">
                   <Avatar className="bg-gradient-to-br from-blue-600 to-purple-600">
                     {review.user?.avatar ? (
-                      <img src={review.user.avatar} alt={review.user.name} />
+                                            <Image src={review.user.avatar} alt={review.user.name} width={32} height={32} className="w-full h-full object-cover" unoptimized />
                     ) : (
                       <User className="text-white" />
                     )}
@@ -295,11 +296,14 @@ export default function ProductReviews({ productId }) {
                     {review.images && review.images.length > 0 && (
                       <div className="flex gap-2 mb-4">
                         {review.images.map((img, idx) => (
-                          <img
+                                                    <Image
                             key={idx}
                             src={img}
                             alt={`Review ${idx + 1}`}
+                            width={96}
+                            height={96}
                             className="w-24 h-24 object-cover rounded-lg cursor-pointer hover:opacity-80"
+                            unoptimized
                           />
                         ))}
                       </div>

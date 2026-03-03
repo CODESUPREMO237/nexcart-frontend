@@ -34,9 +34,14 @@ export default function LiveChat() {
   ])
   const [inputMessage, setInputMessage] = useState('')
   const [isTyping, setIsTyping] = useState(false)
-  const [unreadCount, setUnreadCount] = useState(0)
   const messagesEndRef = useRef(null)
   const chatRef = useRef(null)
+  const messageIdRef = useRef(1)
+
+  const getNextMessageId = () => {
+    messageIdRef.current += 1
+    return messageIdRef.current
+  }
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -46,23 +51,17 @@ export default function LiveChat() {
     scrollToBottom()
   }, [messages])
 
-  useEffect(() => {
-    if (!isOpen && messages.length > 1) {
-      const lastMessage = messages[messages.length - 1]
-      if (lastMessage.sender === 'bot' || lastMessage.sender === 'support') {
-        setUnreadCount(prev => prev + 1)
-      }
-    } else {
-      setUnreadCount(0)
-    }
-  }, [messages, isOpen])
+
+  const unreadCount = isOpen
+    ? 0
+    : messages.filter((message) => message.sender === 'bot' || message.sender === 'support').length
 
   const handleSendMessage = async (e) => {
     e.preventDefault()
     if (!inputMessage.trim()) return
 
     const newMessage = {
-      id: Date.now(),
+      id: getNextMessageId(),
       text: inputMessage,
       sender: 'user',
       timestamp: new Date()
@@ -76,7 +75,7 @@ export default function LiveChat() {
     setTimeout(() => {
       const botResponse = getBotResponse(inputMessage)
       setMessages(prev => [...prev, {
-        id: Date.now() + 1,
+        id: getNextMessageId(),
         text: botResponse,
         sender: 'bot',
         timestamp: new Date()
@@ -101,7 +100,7 @@ export default function LiveChat() {
     } else if (lowerMessage.includes('return') || lowerMessage.includes('refund')) {
       return "We have a 30-day return policy. Would you like to speak with a support agent?"
     } else if (lowerMessage.includes('help') || lowerMessage.includes('support')) {
-      return "I'm here to help! You can also reach our support team at support@nexcart.com or call +237 123 456 789"
+      return "I'm here to help! You can also reach our support team at support@nexcart.cm or call +237 652 314 994"
     } else {
       return "I understand! Let me connect you with a support agent who can better assist you. Please hold on..."
     }
@@ -161,7 +160,7 @@ export default function LiveChat() {
               </div>
               <div>
                 <CardTitle className="text-lg">NexCart Support</CardTitle>
-                <p className="text-xs text-blue-100">We're online • Reply in ~1 min</p>
+                <p className="text-xs text-blue-100">We&apos;re online • Reply in ~1 min</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -300,3 +299,6 @@ export default function LiveChat() {
     </div>
   )
 }
+
+
+

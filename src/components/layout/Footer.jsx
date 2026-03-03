@@ -12,8 +12,6 @@ export default function Footer() {
 
   const handleNewsletterSubmit = (e) => {
     e.preventDefault()
-    // Handle newsletter subscription
-    console.log('Newsletter subscription:', email)
     setEmail('')
   }
 
@@ -22,7 +20,7 @@ export default function Footer() {
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand Section */}
-          <div className="space-y-4">
+          <div className="space-y-4 animate-fade-in-left">
             <Link href="/" className="flex items-center space-x-2 group">
               <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary/60 group-hover:scale-110 transition-transform">
                 <ShoppingCart className="h-6 w-6 text-primary-foreground" />
@@ -32,118 +30,92 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Your ultimate shopping destination powered by AI. Discover personalized products tailored just for you.
+              La meilleure destination shopping au Cameroun, propulsée par l&apos;IA. Découvrez des produits personnalisés rien que pour vous.
             </p>
             <div className="flex space-x-2">
-              <Button size="icon" variant="outline" className="h-9 w-9">
+              <Button size="icon" variant="outline" className="h-9 w-9 btn-press">
                 <Facebook className="h-4 w-4" />
               </Button>
-              <Button size="icon" variant="outline" className="h-9 w-9">
+              <Button size="icon" variant="outline" className="h-9 w-9 btn-press">
                 <Twitter className="h-4 w-4" />
               </Button>
-              <Button size="icon" variant="outline" className="h-9 w-9">
+              <Button size="icon" variant="outline" className="h-9 w-9 btn-press">
                 <Instagram className="h-4 w-4" />
               </Button>
-              <Button size="icon" variant="outline" className="h-9 w-9">
+              <Button size="icon" variant="outline" className="h-9 w-9 btn-press">
                 <Github className="h-4 w-4" />
               </Button>
             </div>
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h3 className="font-semibold text-lg mb-4">Quick Links</h3>
+          <div className="animate-fade-in stagger-2">
+            <h3 className="font-semibold text-lg mb-4">Liens rapides</h3>
             <ul className="space-y-2">
-              <li>
-                <Link href="/products" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  All Products
-                </Link>
-              </li>
-              <li>
-                <Link href="/categories" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Categories
-                </Link>
-              </li>
-              <li>
-                <Link href="/deals" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Hot Deals
-                </Link>
-              </li>
-              <li>
-                <Link href="/new-arrivals" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  New Arrivals
-                </Link>
-              </li>
-              <li>
-                <Link href="/bestsellers" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Best Sellers
-                </Link>
-              </li>
+              {[
+                { href: '/products', label: 'Tous les produits' },
+                { href: '/categories', label: 'Catégories' },
+                { href: '/orders', label: 'Mes commandes' },
+                { href: '/wishlist', label: 'Ma liste de souhaits' },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors hover:translate-x-1 inline-block transition-transform">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Customer Service */}
-          <div>
-            <h3 className="font-semibold text-lg mb-4">Customer Service</h3>
+          <div className="animate-fade-in stagger-3">
+            <h3 className="font-semibold text-lg mb-4">Service client</h3>
             <ul className="space-y-2">
-              <li>
-                <Link href="/about" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Contact Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/shipping" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Shipping Info
-                </Link>
-              </li>
-              <li>
-                <Link href="/returns" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Returns & Exchanges
-                </Link>
-              </li>
-              <li>
-                <Link href="/faq" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  FAQs
-                </Link>
-              </li>
+              {[
+                { href: '/about', label: 'À propos de nous' },
+                { href: '/contact', label: 'Contactez-nous' },
+                { href: '/shipping', label: 'Livraison' },
+                { href: '/returns', label: 'Retours & Échanges' },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors hover:translate-x-1 inline-block transition-transform">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Newsletter */}
-          <div>
+          {/* Newsletter + Contact */}
+          <div className="animate-fade-in-right">
             <h3 className="font-semibold text-lg mb-4">Newsletter</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Subscribe to get special offers and updates delivered to your inbox.
+              Abonnez-vous pour recevoir nos offres spéciales et mises à jour.
             </p>
             <form onSubmit={handleNewsletterSubmit} className="space-y-2">
               <Input
                 type="email"
-                placeholder="Your email address"
+                placeholder="Votre adresse email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
-              <Button type="submit" className="w-full">
-                Subscribe
+              <Button type="submit" className="w-full btn-press">
+                S&apos;abonner
               </Button>
             </form>
             <div className="mt-4 space-y-2">
               <div className="flex items-start space-x-2 text-sm text-muted-foreground">
                 <Mail className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span>support@nexcart.com</span>
+                <span>support@nexcart.cm</span>
               </div>
               <div className="flex items-start space-x-2 text-sm text-muted-foreground">
                 <Phone className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span>+1 (555) 123-4567</span>
+                <span>+237 652 314 994</span>
               </div>
               <div className="flex items-start space-x-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span>123 Shopping Street, NY 10001</span>
+                <span>Tiko, Sud-Ouest, Cameroun</span>
               </div>
             </div>
           </div>
@@ -153,19 +125,15 @@ export default function Footer() {
         <div className="mt-12 pt-8 border-t">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} NexCart. All rights reserved.
+              © {new Date().getFullYear()} NexCart. Tous droits réservés. 🇨🇲 Tiko, Cameroun
             </p>
             <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
               <Link href="/privacy" className="hover:text-primary transition-colors">
-                Privacy Policy
+                Confidentialité
               </Link>
               <span>•</span>
               <Link href="/terms" className="hover:text-primary transition-colors">
-                Terms of Service
-              </Link>
-              <span>•</span>
-              <Link href="/cookies" className="hover:text-primary transition-colors">
-                Cookie Policy
+                Conditions d&apos;utilisation
               </Link>
             </div>
           </div>
@@ -174,3 +142,7 @@ export default function Footer() {
     </footer>
   )
 }
+
+
+
+

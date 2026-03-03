@@ -5,8 +5,9 @@ export function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 export function formatPrice(price) {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('fr-CM', {
     style: 'currency',
-    currency: 'USD', // Change to 'XAF' or your preferred currency
+    currency: 'XAF',
+    maximumFractionDigits: 0,
   }).format(Number(price || 0))
 }

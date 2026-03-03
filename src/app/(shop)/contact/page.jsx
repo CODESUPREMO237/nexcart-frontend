@@ -6,7 +6,7 @@ export default function ContactPage() {
     <div className="container mx-auto px-4 py-16">
       <h1 className="text-5xl font-bold mb-4 text-center">Contact Us</h1>
       <p className="text-xl text-muted-foreground mb-12 text-center">
-        We're here to help! Reach out to us anytime.
+        We&apos;re here to help! Reach out to us anytime.
       </p>
       
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -19,8 +19,8 @@ export default function ContactPage() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-2">For general inquiries:</p>
-            <a href="mailto:support@nexcart.com" className="text-primary hover:underline font-medium">
-              support@nexcart.com
+            <a href="mailto:support@nexcart.cm" className="text-primary hover:underline font-medium">
+              support@nexcart.cm
             </a>
           </CardContent>
         </Card>
@@ -34,8 +34,8 @@ export default function ContactPage() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-2">Customer Service:</p>
-            <a href="tel:+15551234567" className="text-primary hover:underline font-medium">
-              +1 (555) 123-4567
+            <a href="tel:+237652314994" className="text-primary hover:underline font-medium">
+              +237 652 314 994
             </a>
           </CardContent>
         </Card>
@@ -49,9 +49,7 @@ export default function ContactPage() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">
-              123 Shopping Street<br />
-              New York, NY 10001<br />
-              United States
+              Tiko, Southwest, Cameroon
             </p>
           </CardContent>
         </Card>
@@ -75,3 +73,4 @@ export default function ContactPage() {
     </div>
   )
 }
+

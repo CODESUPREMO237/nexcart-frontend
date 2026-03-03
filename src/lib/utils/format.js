@@ -29,10 +29,10 @@ export function formatRating(rating, decimals = 1) {
 /**
  * Format a price value
  * @param {string|number} price - The price value
- * @param {string} currency - Currency symbol (default: $)
+ * @param {string} currency - Currency symbol (default: FCFA)
  * @returns {string} Formatted price
  */
-export function formatPrice(price, currency = '$') {
+export function formatPrice(price, currency = 'FCFA ') {
   const numPrice = toNumber(price, 0);
   return `${currency}${numPrice.toFixed(2)}`;
 }

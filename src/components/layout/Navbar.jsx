@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ShoppingCart, User, Search, Menu, X, Heart, Package, Home, Grid3x3 } from 'lucide-react'
+import { ShoppingCart, User, Search, Menu, X, Heart, Package, Home, Grid3x3, History } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -160,14 +160,14 @@ export default function Navbar() {
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/orders" className="cursor-pointer">
-                      <Package className="mr-2 h-4 w-4" />
-                      Orders
+                      <History className="mr-2 h-4 w-4" />
+                      Historique
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/wishlist" className="cursor-pointer">
                       <Heart className="mr-2 h-4 w-4" />
-                      Wishlist
+                      Favoris
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />

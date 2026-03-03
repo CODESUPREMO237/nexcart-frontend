@@ -76,7 +76,24 @@ const useAuthStore = create(
           
           return { success: true, user: data.user }
         } catch (error) {
-          const errorMessage = error.response?.data?.error || 'Registration failed'
+          const responseData = error.response?.data
+          let errorMessage = 'Registration failed'
+          if (responseData) {
+            if (typeof responseData === 'string') {
+              errorMessage = responseData
+            } else if (responseData.error) {
+              errorMessage = responseData.error
+            } else {
+              // DRF field-level validation errors e.g. { password: ['Too common.'], email: ['Already exists.'] }
+              const messages = Object.entries(responseData)
+                .map(([field, errors]) => {
+                  const fieldName = field.charAt(0).toUpperCase() + field.slice(1).replace(/_/g, ' ')
+                  const errList = Array.isArray(errors) ? errors.join(' ') : errors
+                  return `${fieldName}: ${errList}`
+                })
+              errorMessage = messages.join(' | ')
+            }
+          }
           set({ error: errorMessage, isLoading: false })
           return { success: false, error: errorMessage }
         }

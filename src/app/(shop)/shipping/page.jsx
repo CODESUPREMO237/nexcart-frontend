@@ -18,7 +18,7 @@ export default function ShippingPage() {
           <CardContent>
             <p className="text-2xl font-bold mb-2">FREE</p>
             <p className="text-sm text-muted-foreground">5-7 business days</p>
-            <p className="text-xs mt-2">On orders over $50</p>
+            <p className="text-xs mt-2">On orders over 50 FCFA</p>
           </CardContent>
         </Card>
 
@@ -28,7 +28,7 @@ export default function ShippingPage() {
             <CardTitle>Express</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold mb-2">$15</p>
+            <p className="text-2xl font-bold mb-2">15 FCFA</p>
             <p className="text-sm text-muted-foreground">2-3 business days</p>
           </CardContent>
         </Card>
@@ -39,7 +39,7 @@ export default function ShippingPage() {
             <CardTitle>Overnight</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold mb-2">$30</p>
+            <p className="text-2xl font-bold mb-2">30 FCFA</p>
             <p className="text-sm text-muted-foreground">1 business day</p>
           </CardContent>
         </Card>
@@ -59,9 +59,10 @@ export default function ShippingPage() {
 
         <h2>Order Tracking</h2>
         <p>
-          Once your order ships, you'll receive a tracking number via email to monitor your delivery.
+          Once your order ships, you&apos;ll receive a tracking number via email to monitor your delivery.
         </p>
       </div>
     </div>
   )
 }
+

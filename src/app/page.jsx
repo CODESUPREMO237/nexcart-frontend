@@ -3,82 +3,91 @@
 
 import { useEffect, useState } from 'react'
 import { api } from '@/lib/api'
+import useCartStore from '@/store/cartStore'
+import useAuthStore from '@/store/authStore'
+import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatRating, formatProductsArray } from '@/lib/utils/format'; // <--- Double check this path
-import { ShoppingCart, Heart, Star, TrendingUp, Sparkles, ArrowRight, Package, Shield, Truck } from 'lucide-react'
+import { formatRating, formatProductsArray } from '@/lib/utils/format'
+import { ShoppingCart, Heart, Star, TrendingUp, Sparkles, ArrowRight, Package, Shield, Truck, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import ProductImage from '@/components/ProductImage'
 
+const fcfa = (n) =>
+  new Intl.NumberFormat('fr-CM', { style: 'currency', currency: 'XAF', maximumFractionDigits: 0 }).format(n)
+
 export default function HomePage() {
+  const { addItem } = useCartStore()
+  const { isAuthenticated } = useAuthStore()
+  const { toast } = useToast()
   const [featuredProducts, setFeaturedProducts] = useState([])
-  const [recommendations, setRecommendations] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [recommendations, setRecommendations]   = useState([])
+  const [loading, setLoading]   = useState(true)
+  const [error, setError]       = useState(null)
+  const [addingToCart, setAddingToCart]     = useState(null)
+  const [addingToWishlist, setAddingToWishlist] = useState(null)
 
-  useEffect(() => {
-    loadData()
-  }, [])
+  useEffect(() => { loadData() }, [])
 
- const loadData = async () => {
-  try {
-    setError(null)
-    const [featured, recommended] = await Promise.all([
-      api.getFeaturedProducts().catch(() => ({ results: [] })),
-      api.getRecommendations().catch(() => ({ results: [] })),
-    ])
-    
-    // Clean the data using your new utility
-    const cleanedFeatured = formatProductsArray(featured.results || featured || [])
-    const cleanedRecommended = formatProductsArray(recommended.results || recommended || [])
-    
-    setFeaturedProducts(cleanedFeatured)
-    setRecommendations(cleanedRecommended)
-  } catch (error) {
-    console.error('Failed to load data:', error)
-    setError('Unable to load products. Please check if the backend is running.')
-  } finally {
-    setLoading(false)
+  const loadData = async () => {
+    try {
+      setError(null)
+      const [featured, recommended] = await Promise.all([
+        api.getFeaturedProducts().catch(() => ({ results: [] })),
+        api.getRecommendations().catch(() => ({ results: [] })),
+      ])
+      setFeaturedProducts(formatProductsArray(featured.results || featured || []))
+      setRecommendations(formatProductsArray(recommended.results || recommended || []))
+    } catch {
+      setError('Impossible de charger les produits. Vérifiez que le serveur est démarré.')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  }
-
-  const handleAddToCart = async (productId) => {
-    // Check if user is authenticated
-    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
-    if (!token) {
-      // Redirect to login with current page as redirect
+  const handleAddToCart = async (product) => {
+    if (!isAuthenticated) {
+      toast({ title: 'Connexion requise', description: 'Connectez-vous pour ajouter au panier', variant: 'destructive' })
       window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname)
       return
     }
-
+    setAddingToCart(product.id)
     try {
-      await api.addToCart(productId, 1)
-      await api.trackActivity('add_cart', productId)
-    } catch (error) {
-      console.error('Failed to add to cart:', error)
-      // If 401, redirect to login
-      if (error.response?.status === 401) {
-        window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname)
+      const result = await addItem(product.id, 1)
+      if (result?.success) {
+        toast({ title: '🛒 Ajouté au panier !', description: `${product.name} a été ajouté à votre panier.`, variant: 'success' })
+      } else if (result?.error) {
+        toast({ title: 'Erreur', description: result.error, variant: 'destructive' })
       }
+    } catch {
+      toast({ title: 'Erreur', description: 'Impossible d\'ajouter au panier', variant: 'destructive' })
+    } finally {
+      setAddingToCart(null)
     }
   }
 
-  const handleAddToWishlist = async (productId) => {
+  const handleAddToWishlist = async (product) => {
+    if (!isAuthenticated) {
+      toast({ title: 'Connexion requise', description: 'Connectez-vous pour ajouter aux favoris', variant: 'destructive' })
+      return
+    }
+    setAddingToWishlist(product.id)
     try {
-      await api.addToWishlist(productId)
-      await api.trackActivity('wishlist', productId)
-    } catch (error) {
-      console.error('Failed to add to wishlist:', error)
+      await api.addToWishlist(product.id)
+      await api.trackActivity('wishlist', product.id)
+      toast({ title: '❤️ Ajouté aux favoris !', description: `${product.name} est dans votre liste de souhaits.`, variant: 'success' })
+    } catch {
+      toast({ title: 'Erreur', description: 'Impossible d\'ajouter aux favoris', variant: 'destructive' })
+    } finally {
+      setAddingToWishlist(null)
     }
   }
 
   if (loading) {
     return (
       <div className="min-h-screen">
-        {/* Hero Skeleton */}
         <section className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent py-20">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center space-y-4">
@@ -91,12 +100,10 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-
-        {/* Products Skeleton */}
         <section className="container mx-auto px-4 py-16">
           <Skeleton className="h-8 w-48 mb-8" />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((i) => (
+            {[1,2,3,4].map((i) => (
               <Card key={i}>
                 <Skeleton className="aspect-square" />
                 <CardContent className="p-4">
@@ -113,78 +120,64 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
+      {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-primary/5 to-background py-20 md:py-32">
         <div className="absolute inset-0 bg-grid-white/10 [mask-image:radial-gradient(white,transparent_85%)]" />
         <div className="container relative mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <Badge className="mb-6 text-base px-4 py-2" variant="secondary">
+          <div className="max-w-4xl mx-auto text-center animate-fade-in">
+            <Badge className="mb-6 text-base px-4 py-2 animate-scale-in" variant="secondary">
               <Sparkles className="w-4 h-4 mr-2" />
-              AI-Powered Shopping Experience
+              Shopping intelligent propulsé par l&apos;IA — Tiko, Cameroun 🇨🇲
             </Badge>
             <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent leading-tight">
-              Shop Smarter with NexCart
+              Bienvenue sur NexCart
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground mb-10 leading-relaxed">
-              Discover products tailored just for you with our intelligent recommendation system. The future of shopping is here.
+              Découvrez des produits adaptés à vos goûts grâce à notre système de recommandation intelligent.
+              Payez facilement par MTN ou Orange Money.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" asChild className="text-lg px-8 py-6">
+              <Button size="lg" asChild className="text-lg px-8 py-6 btn-press">
                 <Link href="/products">
-                  Explore Products
+                  Explorer les produits
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" asChild className="text-lg px-8 py-6">
-                <Link href="/categories">Browse Categories</Link>
+              <Button size="lg" variant="outline" asChild className="text-lg px-8 py-6 btn-press">
+                <Link href="/categories">Voir les catégories</Link>
               </Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features */}
       <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="flex flex-col items-center text-center p-6 rounded-lg bg-background hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <Truck className="w-8 h-8 text-primary" />
+            {[
+              { icon: Truck, title: 'Livraison gratuite', desc: 'Commandes supérieures à 25 000 FCFA', delay: 'stagger-1' },
+              { icon: Shield, title: 'Paiement sécurisé', desc: '100% sécurisé via MeSomb', delay: 'stagger-2' },
+              { icon: Package, title: 'Retours faciles', desc: 'Politique de retour 30 jours', delay: 'stagger-3' },
+            ].map(({ icon: Icon, title, desc, delay }) => (
+              <div key={title} className={`flex flex-col items-center text-center p-6 rounded-lg bg-background card-hover animate-fade-in ${delay}`}>
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 animate-float">
+                  <Icon className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">{title}</h3>
+                <p className="text-muted-foreground">{desc}</p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Free Shipping</h3>
-              <p className="text-muted-foreground">On orders over $50</p>
-            </div>
-            
-            <div className="flex flex-col items-center text-center p-6 rounded-lg bg-background hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <Shield className="w-8 h-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Secure Payment</h3>
-              <p className="text-muted-foreground">100% secure transactions</p>
-            </div>
-            
-            <div className="flex flex-col items-center text-center p-6 rounded-lg bg-background hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <Package className="w-8 h-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Easy Returns</h3>
-              <p className="text-muted-foreground">30-day return policy</p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Error Message */}
+      {/* Error */}
       {error && (
         <section className="container mx-auto px-4 py-8">
-          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 text-center">
+          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 text-center animate-scale-in">
             <p className="text-destructive font-medium mb-2">{error}</p>
-            <p className="text-sm text-muted-foreground">
-              Make sure the backend server is running at http://localhost:8000
-            </p>
-            <Button onClick={loadData} className="mt-4">
-              Try Again
-            </Button>
+            <Button onClick={loadData} className="mt-4 btn-press">Réessayer</Button>
           </div>
         </section>
       )}
@@ -192,108 +185,22 @@ export default function HomePage() {
       {/* Featured Products */}
       {featuredProducts.length > 0 && (
         <section className="py-16 container mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-8 animate-fade-in">
             <div className="flex items-center">
               <TrendingUp className="w-8 h-8 mr-3 text-primary" />
-              <h2 className="text-4xl font-bold">Featured Products</h2>
+              <h2 className="text-4xl font-bold">Produits vedettes</h2>
             </div>
             <Button variant="ghost" asChild>
-              <Link href="/products">
-                View All
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
+              <Link href="/products">Voir tout <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredProducts.slice(0, 8).map((product) => (
-              <Card key={product.id} className="group hover:shadow-xl transition-all duration-300">
-                <CardHeader className="p-0">
-                  <div className="relative aspect-square overflow-hidden rounded-t-lg bg-muted">
-                    <ProductImage
-                      src={product.featured_image}
-                      alt={product.name}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
-                    {product.discount_percentage > 0 && (
-                      <Badge className="absolute top-3 right-3 bg-destructive text-destructive-foreground">
-                        -{product.discount_percentage}%
-                      </Badge>
-                    )}
-                    <Button
-                      size="icon"
-                      variant="secondary"
-                      className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                      onClick={() => handleAddToWishlist(product.id)}
-                    >
-                      <Heart className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="p-4">
-                  <Link href={`/products/${product.id}`}>
-                    <CardTitle className="text-lg mb-3 hover:text-primary transition-colors line-clamp-2 leading-tight">
-                      {product.name}
-                    </CardTitle>
-                  </Link>
-                  
-                  <div className="flex items-center mb-3">
-                    <div className="flex items-center">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-<span className="ml-1 text-sm font-medium">
-  {formatRating(product.average_rating)}
-</span>                    </div>
-                    <span className="text-sm text-muted-foreground ml-2">
-                      ({product.review_count || 0} reviews)
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-primary">${product.price}</span>
-                    {product.compare_price && (
-                      <span className="text-sm text-muted-foreground line-through">
-                        ${product.compare_price}
-                      </span>
-                    )}
-                  </div>
-                </CardContent>
-                
-                <CardFooter className="p-4 pt-0">
-                  <Button 
-                    className="w-full group/btn" 
-                    onClick={() => handleAddToCart(product.id)}
-                    disabled={!product.is_in_stock}
-                  >
-                    {product.is_in_stock ? (
-                      <>
-                        <ShoppingCart className="mr-2 h-4 w-4 group-hover/btn:animate-bounce" />
-                        Add to Cart
-                      </>
-                    ) : (
-                      'Out of Stock'
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        </section>
-      )}
 
-      {/* Recommended Products */}
-      {recommendations.length > 0 && (
-        <section className="py-16 bg-gradient-to-b from-background to-muted/20">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center mb-8">
-              <Sparkles className="w-8 h-8 mr-3 text-primary" />
-              <h2 className="text-4xl font-bold">Recommended For You</h2>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {recommendations.slice(0, 4).map((product) => (
-                <Card key={product.id} className="group hover:shadow-xl transition-all duration-300">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {featuredProducts.slice(0, 8).map((product, idx) => {
+              const isAdding = addingToCart === product.id
+              const isWishlisting = addingToWishlist === product.id
+              return (
+                <Card key={product.id} className={`group card-hover animate-fade-in stagger-${Math.min(idx + 1, 8)}`}>
                   <CardHeader className="p-0">
                     <div className="relative aspect-square overflow-hidden rounded-t-lg bg-muted">
                       <ProductImage
@@ -302,50 +209,115 @@ export default function HomePage() {
                         fill
                         className="object-cover group-hover:scale-110 transition-transform duration-300"
                       />
+                      {product.discount_percentage > 0 && (
+                        <Badge className="absolute top-3 right-3 bg-destructive text-destructive-foreground animate-scale-in">
+                          -{product.discount_percentage}%
+                        </Badge>
+                      )}
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg btn-press"
+                        onClick={() => handleAddToWishlist(product)}
+                        disabled={isWishlisting}
+                      >
+                        {isWishlisting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Heart className="h-4 w-4" />}
+                      </Button>
                     </div>
                   </CardHeader>
-                  
                   <CardContent className="p-4">
                     <Link href={`/products/${product.id}`}>
-                      <CardTitle className="text-lg mb-2 hover:text-primary transition-colors line-clamp-2">
+                      <CardTitle className="text-lg mb-3 hover:text-primary transition-colors line-clamp-2 leading-tight">
                         {product.name}
                       </CardTitle>
                     </Link>
-                    
-                    <div className="flex items-center mb-2">
+                    <div className="flex items-center mb-3">
                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="ml-1 text-sm">{product.average_rating?.toFixed(1) || '0.0'}</span>
+                      <span className="ml-1 text-sm font-medium">{formatRating(product.average_rating)}</span>
+                      <span className="text-sm text-muted-foreground ml-2">({product.review_count || 0} avis)</span>
                     </div>
-                    
-                    <span className="text-2xl font-bold text-primary">${product.price}</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-bold text-primary">{fcfa(product.price)}</span>
+                      {product.compare_price && (
+                        <span className="text-sm text-muted-foreground line-through">{fcfa(product.compare_price)}</span>
+                      )}
+                    </div>
                   </CardContent>
-                  
                   <CardFooter className="p-4 pt-0">
-                    <Button 
-                      className="w-full" 
-                      variant="outline"
-                      onClick={() => handleAddToCart(product.id)}
+                    <Button
+                      className="w-full btn-press"
+                      onClick={() => handleAddToCart(product)}
+                      disabled={!product.is_in_stock || isAdding}
                     >
-                      <ShoppingCart className="mr-2 h-4 w-4" />
-                      Add to Cart
+                      {isAdding ? (
+                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Ajout…</>
+                      ) : product.is_in_stock ? (
+                        <><ShoppingCart className="mr-2 h-4 w-4" />Ajouter au panier</>
+                      ) : 'Rupture de stock'}
                     </Button>
                   </CardFooter>
                 </Card>
-              ))}
+              )
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Recommendations */}
+      {recommendations.length > 0 && (
+        <section className="py-16 bg-gradient-to-b from-background to-muted/20">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center mb-8 animate-fade-in">
+              <Sparkles className="w-8 h-8 mr-3 text-primary" />
+              <h2 className="text-4xl font-bold">Recommandé pour vous</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {recommendations.slice(0, 4).map((product, idx) => {
+                const isAdding = addingToCart === product.id
+                return (
+                  <Card key={product.id} className={`group card-hover animate-fade-in stagger-${Math.min(idx + 1, 4)}`}>
+                    <CardHeader className="p-0">
+                      <div className="relative aspect-square overflow-hidden rounded-t-lg bg-muted">
+                        <ProductImage src={product.featured_image} alt={product.name} fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-300" />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-4">
+                      <Link href={`/products/${product.id}`}>
+                        <CardTitle className="text-lg mb-2 hover:text-primary transition-colors line-clamp-2">{product.name}</CardTitle>
+                      </Link>
+                      <div className="flex items-center mb-2">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="ml-1 text-sm">{formatRating(product.average_rating)}</span>
+                      </div>
+                      <span className="text-2xl font-bold text-primary">{fcfa(product.price)}</span>
+                    </CardContent>
+                    <CardFooter className="p-4 pt-0">
+                      <Button className="w-full btn-press" variant="outline"
+                        onClick={() => handleAddToCart(product)} disabled={!product.is_in_stock || isAdding}>
+                        {isAdding ? (
+                          <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Ajout…</>
+                        ) : (
+                          <><ShoppingCart className="mr-2 h-4 w-4" />Ajouter au panier</>
+                        )}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                )
+              })}
             </div>
           </div>
         </section>
       )}
 
-      {/* CTA Section */}
+      {/* CTA */}
       <section className="py-20 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to Start Shopping?</h2>
-          <p className="text-xl mb-8 opacity-90">Join thousands of happy customers today</p>
-          <Button size="lg" variant="secondary" asChild className="text-lg px-8 py-6">
+        <div className="container mx-auto px-4 text-center animate-fade-in">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">Prêt à faire vos achats ?</h2>
+          <p className="text-xl mb-8 opacity-90">Rejoignez des milliers de clients satisfaits à Tiko et partout au Cameroun</p>
+          <Button size="lg" variant="secondary" asChild className="text-lg px-8 py-6 btn-press">
             <Link href="/products">
-              Browse All Products
-              <ArrowRight className="ml-2 h-5 w-5" />
+              Voir tous les produits <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
         </div>
@@ -353,3 +325,5 @@ export default function HomePage() {
     </div>
   )
 }
+
+

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRequireAuth } from '@/hooks/useAuth'
 import useAuthStore from '@/store/authStore'
 import { Button } from '@/components/ui/button'
@@ -10,48 +10,47 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { User, Mail, Phone, MapPin, Calendar, Shield } from 'lucide-react'
 
+const EMPTY_FORM = {
+  firstName: '',
+  lastName: '',
+  phone: '',
+  address: '',
+  city: '',
+  state: '',
+  zipCode: '',
+  country: '',
+}
+
 export default function ProfilePage() {
   const { isLoading, isAuthorized } = useRequireAuth()
   const { user } = useAuthStore()
   const [editing, setEditing] = useState(false)
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    phone: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: '',
-  })
+  const [formData, setFormData] = useState(EMPTY_FORM)
 
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        firstName: user.first_name || '',
-        lastName: user.last_name || '',
-        phone: user.phone || '',
-        address: '',
-        city: '',
-        state: '',
-        zipCode: '',
-        country: '',
-      })
-    }
-  }, [user])
+  const mergedFormData = {
+    firstName: formData.firstName || user?.first_name || '',
+    lastName: formData.lastName || user?.last_name || '',
+    phone: formData.phone || user?.phone || '',
+    address: formData.address,
+    city: formData.city,
+    state: formData.state,
+    zipCode: formData.zipCode,
+    country: formData.country,
+  }
 
   const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
+    const { name, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
       // TODO: Add API call to update user profile when backend endpoint is ready
-      // await api.updateProfile(formData)
+      // await api.updateProfile(mergedFormData)
       setEditing(false)
       alert('Profile updated successfully!')
     } catch (error) {
@@ -144,7 +143,7 @@ export default function ProfilePage() {
                       <Input
                         id="firstName"
                         name="firstName"
-                        value={formData.firstName}
+                        value={mergedFormData.firstName}
                         onChange={handleInputChange}
                         className="pl-10"
                         disabled={!editing}
@@ -158,7 +157,7 @@ export default function ProfilePage() {
                       <Input
                         id="lastName"
                         name="lastName"
-                        value={formData.lastName}
+                        value={mergedFormData.lastName}
                         onChange={handleInputChange}
                         className="pl-10"
                         disabled={!editing}
@@ -194,7 +193,7 @@ export default function ProfilePage() {
                       id="phone"
                       name="phone"
                       type="tel"
-                      value={formData.phone}
+                      value={mergedFormData.phone}
                       onChange={handleInputChange}
                       className="pl-10"
                       disabled={!editing}
@@ -216,7 +215,7 @@ export default function ProfilePage() {
                       <Input
                         id="address"
                         name="address"
-                        value={formData.address}
+                        value={mergedFormData.address}
                         onChange={handleInputChange}
                         disabled={!editing}
                         className="mt-2"
@@ -229,7 +228,7 @@ export default function ProfilePage() {
                         <Input
                           id="city"
                           name="city"
-                          value={formData.city}
+                          value={mergedFormData.city}
                           onChange={handleInputChange}
                           disabled={!editing}
                           className="mt-2"
@@ -240,7 +239,7 @@ export default function ProfilePage() {
                         <Input
                           id="state"
                           name="state"
-                          value={formData.state}
+                          value={mergedFormData.state}
                           onChange={handleInputChange}
                           disabled={!editing}
                           className="mt-2"
@@ -254,7 +253,7 @@ export default function ProfilePage() {
                         <Input
                           id="zipCode"
                           name="zipCode"
-                          value={formData.zipCode}
+                          value={mergedFormData.zipCode}
                           onChange={handleInputChange}
                           disabled={!editing}
                           className="mt-2"
@@ -265,7 +264,7 @@ export default function ProfilePage() {
                         <Input
                           id="country"
                           name="country"
-                          value={formData.country}
+                          value={mergedFormData.country}
                           onChange={handleInputChange}
                           disabled={!editing}
                           className="mt-2"
@@ -283,7 +282,10 @@ export default function ProfilePage() {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => setEditing(false)}
+                        onClick={() => {
+                          setEditing(false)
+                          setFormData(EMPTY_FORM)
+                        }}
                       >
                         Cancel
                       </Button>

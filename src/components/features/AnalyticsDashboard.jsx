@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -33,7 +33,6 @@ import {
   Package
 } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
-import api from '@/lib/api'
 
 export default function AnalyticsDashboard() {
   const [loading, setLoading] = useState(true)
@@ -62,18 +61,14 @@ export default function AnalyticsDashboard() {
     }
   })
 
-  useEffect(() => {
-    fetchAnalytics()
-  }, [timeRange])
-
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     try {
       setLoading(true)
-      
+
       // Simulate API call - replace with actual API
       const mockData = generateMockData(timeRange)
       setAnalyticsData(mockData)
-      
+
       // Actual API call would be:
       // const response = await api.get(`/admin/analytics/?range=${timeRange}`)
       // setAnalyticsData(response.data)
@@ -82,7 +77,12 @@ export default function AnalyticsDashboard() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [timeRange])
+
+  useEffect(() => {
+    fetchAnalytics()
+  }, [fetchAnalytics])
+
 
   const generateMockData = (range) => {
     const days = range === '7d' ? 7 : range === '30d' ? 30 : 90
@@ -151,7 +151,7 @@ export default function AnalyticsDashboard() {
       </CardHeader>
       <CardContent>
         <div className="text-3xl font-bold">
-          {prefix}{typeof value === 'number' && prefix === '$' ? formatPrice(value) : value}
+          {typeof value === 'number' ? formatPrice(value) : value}
         </div>
         {change !== undefined && (
           <p className={`text-sm mt-2 flex items-center ${
@@ -203,7 +203,7 @@ export default function AnalyticsDashboard() {
           icon={DollarSign}
           change={analyticsData.revenueStats.change}
           color="text-green-600"
-          prefix="$"
+          
         />
         <StatCard
           title="Total Orders"

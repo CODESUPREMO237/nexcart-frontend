@@ -1,5 +1,3 @@
-// Location: components/features/RecentlyViewed.jsx
-
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -15,32 +13,31 @@ export default function RecentlyViewed() {
   const [currentIndex, setCurrentIndex] = useState(0)
 
   useEffect(() => {
+    const loadRecentlyViewed = async () => {
+      try {
+        const viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]')
+        if (viewed.length > 0) {
+          const productPromises = viewed.slice(0, 10).map((id) =>
+            api.getProduct(id).catch(() => null)
+          )
+          const products = await Promise.all(productPromises)
+
+          const sanitizedProducts = products
+            .filter((p) => p !== null)
+            .map((p) => ({
+              ...p,
+              average_rating: Number(p.average_rating || 0),
+            }))
+
+          setRecentProducts(sanitizedProducts)
+        }
+      } catch (error) {
+        console.error('Failed to load recently viewed:', error)
+      }
+    }
+
     loadRecentlyViewed()
   }, [])
-
-const loadRecentlyViewed = async () => {
-  try {
-    const viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
-    if (viewed.length > 0) {
-      const productPromises = viewed.slice(0, 10).map(id => 
-        api.getProduct(id).catch(() => null)
-      );
-      const products = await Promise.all(productPromises);
-      
-      // Clean the data here: ensure average_rating is always a number
-      const sanitizedProducts = products
-        .filter(p => p !== null)
-        .map(p => ({
-          ...p,
-          average_rating: Number(p.average_rating || 0)
-        }));  
-
-      setRecentProducts(sanitizedProducts);
-    }
-  } catch (error) {
-    console.error('Failed to load recently viewed:', error);
-  }
-}
 
   const scroll = (direction) => {
     const maxIndex = Math.max(0, recentProducts.length - 4)
@@ -79,13 +76,13 @@ const loadRecentlyViewed = async () => {
         </div>
 
         <div className="overflow-hidden">
-          <div 
+          <div
             className="flex gap-4 transition-transform duration-300"
             style={{ transform: `translateX(-${currentIndex * (100 / 4)}%)` }}
           >
             {recentProducts.map((product) => (
-              <Card 
-                key={product.id} 
+              <Card
+                key={product.id}
                 className="min-w-[calc(25%-12px)] group hover:shadow-lg transition-shadow"
               >
                 <Link href={`/products/${product.id}`}>
@@ -115,7 +112,7 @@ const loadRecentlyViewed = async () => {
                       </span>
                     </div>
                     <p className="text-lg font-bold text-primary">
-                      ${product.price}
+                      {Number(product.price || 0).toLocaleString('fr-CM')} FCFA
                     </p>
                   </CardContent>
                 </Link>
@@ -128,17 +125,14 @@ const loadRecentlyViewed = async () => {
   )
 }
 
-// Utility function to track viewed products
 export const trackProductView = (productId) => {
   try {
     const viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]')
-    
-    // Remove if already exists
-    const filtered = viewed.filter(id => id !== productId)
-    
-    // Add to beginning
+
+    const filtered = viewed.filter((id) => id !== productId)
+
     const updated = [productId, ...filtered].slice(0, 10)
-    
+
     localStorage.setItem('recentlyViewed', JSON.stringify(updated))
   } catch (error) {
     console.error('Failed to track product view:', error)

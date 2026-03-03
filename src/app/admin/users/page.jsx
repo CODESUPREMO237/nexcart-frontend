@@ -1,7 +1,7 @@
 // src/app/admin/users/page.jsx
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import useAuthStore from '@/store/authStore'
@@ -57,20 +57,7 @@ export default function UsersPage() {
   const [formErrors, setFormErrors] = useState({})
   const [errorMessage, setErrorMessage] = useState('')
 
-  useEffect(() => {
-    // Check authentication and admin role
-    if (!isAuthenticated) {
-      router.push('/login')
-      return
-    }
-    if (user && user.role !== 'admin') {
-      router.push('/')
-      return
-    }
-    fetchUsers()
-  }, [isAuthenticated, user, router])
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true)
       setErrorMessage('')
@@ -90,7 +77,19 @@ export default function UsersPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/login')
+      return
+    }
+    if (user && user.role !== 'admin') {
+      router.push('/')
+      return
+    }
+    fetchUsers()
+  }, [isAuthenticated, user, router, fetchUsers])
 
   const filteredUsers = users.filter(user => 
     user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||

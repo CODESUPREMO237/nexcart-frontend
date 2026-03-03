@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 
 export default function DiagnosticsPage() {
   const [config, setConfig] = useState({})
@@ -96,13 +97,15 @@ export default function DiagnosticsPage() {
                   {(products.results?.[0] || products[0]).featured_image && (
                     <div className="mt-4">
                       <span className="font-semibold">Image Preview:</span>
-                      <img 
-                        src={(products.results?.[0] || products[0]).featured_image} 
+                                            <Image
+                        src={(products.results?.[0] || products[0]).featured_image}
                         alt="Test"
+                        width={320}
+                        height={320}
                         className="mt-2 max-w-xs border"
+                        unoptimized
                         onError={(e) => {
-                          e.target.style.border = '2px solid red'
-                          e.target.alt = '❌ Image failed to load'
+                          e.currentTarget.style.border = '2px solid red'
                         }}
                       />
                     </div>

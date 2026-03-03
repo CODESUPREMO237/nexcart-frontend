@@ -37,6 +37,7 @@ import {
   ChevronRight
 } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
+import Image from 'next/image'
 
 export default function AdminProductsPage() {
   const router = useRouter()
@@ -215,10 +216,12 @@ export default function AdminProductsPage() {
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                           {product.image ? (
-                            <img
+                                                        <Image
                               src={product.image}
                               alt={product.name}
+                              fill
                               className="w-full h-full object-cover"
+                              unoptimized
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRequireAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 import { api } from '@/lib/api'
@@ -22,13 +22,7 @@ export default function WishlistPage() {
   const [updating, setUpdating] = useState(null) // Track which item is being updated
   const [addingToCart, setAddingToCart] = useState(null) // Track which item is being added to cart
 
-  useEffect(() => {
-    if (isAuthorized) {
-      loadWishlist()
-    }
-  }, [isAuthorized])
-
-  const loadWishlist = async () => {
+  const loadWishlist = useCallback(async () => {
     try {
       const wishlistData = await api.getWishlist()
       setWishlist(wishlistData.results || wishlistData || [])
@@ -42,7 +36,13 @@ export default function WishlistPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [toast])
+
+  useEffect(() => {
+    if (isAuthorized) {
+      loadWishlist()
+    }
+  }, [isAuthorized, loadWishlist])
 
   const handleRemove = async (wishlistId) => {
     setUpdating(wishlistId)
@@ -200,11 +200,11 @@ export default function WishlistPage() {
 
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl font-bold text-primary">
-                    ${item.product.price}
+                    {Number(item.product.price || 0).toLocaleString('fr-CM')} FCFA
                   </span>
                   {item.product.compare_price && (
                     <span className="text-sm text-muted-foreground line-through">
-                      ${item.product.compare_price}
+                      {Number(item.product.compare_price || 0).toLocaleString('fr-CM')} FCFA
                     </span>
                   )}
                 </div>
