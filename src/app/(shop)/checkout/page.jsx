@@ -332,7 +332,7 @@ export default function CheckoutPage() {
 
   const cartItems = cart?.items || []
   const subtotal  = cartItems.reduce((s, i) => s + parseFloat(i.product.price) * i.quantity, 0)
-  const shipping  = subtotal > 25000 ? 0 : 2  // TODO: change back to 2000 after testing
+  const shipping  = subtotal > 25000 ? 0 : 2000
   const total     = subtotal + shipping
 
   return (
