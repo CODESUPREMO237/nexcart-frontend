@@ -161,13 +161,13 @@ export default function Navbar() {
                   <DropdownMenuItem asChild>
                     <Link href="/orders" className="cursor-pointer">
                       <History className="mr-2 h-4 w-4" />
-                      Historique
+                      Order History
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/wishlist" className="cursor-pointer">
                       <Heart className="mr-2 h-4 w-4" />
-                      Favoris
+                      Wishlist
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />

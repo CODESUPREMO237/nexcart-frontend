@@ -23,9 +23,7 @@ export default function CartPage() {
   const [updatingItem, setUpdatingItem] = useState(null)
   const [mounted, setMounted] = useState(false)
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  useEffect(() => { setMounted(true) }, [])
 
   const loadCart = useCallback(async () => {
     try {
@@ -33,7 +31,7 @@ export default function CartPage() {
       setCart(cartData)
     } catch (error) {
       if (error.response?.status === 401) { router.push('/login?redirect=/cart'); return }
-      toast({ title: 'Erreur', description: 'Impossible de charger le panier', variant: 'destructive' })
+      toast({ title: 'Error', description: 'Failed to load cart', variant: 'destructive' })
     } finally {
       setLoading(false)
     }
@@ -42,10 +40,7 @@ export default function CartPage() {
   useEffect(() => {
     if (!mounted) return
     const token = localStorage.getItem('access_token')
-    if (!token) {
-      router.push('/login?redirect=/cart')
-      return
-    }
+    if (!token) { router.push('/login?redirect=/cart'); return }
     loadCart()
   }, [mounted, router, loadCart])
 
@@ -55,9 +50,9 @@ export default function CartPage() {
     try {
       await api.updateCartItem(itemId, newQuantity)
       await loadCart()
-      toast({ title: 'Panier mis à jour', description: 'La quantité a été modifiée.', variant: 'success' })
+      toast({ title: 'Cart updated', description: 'Quantity has been changed.', variant: 'success' })
     } catch {
-      toast({ title: 'Erreur', description: 'Impossible de modifier la quantité', variant: 'destructive' })
+      toast({ title: 'Error', description: 'Failed to update quantity', variant: 'destructive' })
     } finally {
       setUpdatingItem(null)
     }
@@ -68,9 +63,9 @@ export default function CartPage() {
     try {
       await api.removeFromCart(itemId)
       await loadCart()
-      toast({ title: 'Article retiré', description: `${productName} a été retiré du panier.`, variant: 'success' })
+      toast({ title: 'Item removed', description: `${productName} was removed from your cart.`, variant: 'success' })
     } catch {
-      toast({ title: 'Erreur', description: "Impossible de retirer l'article", variant: 'destructive' })
+      toast({ title: 'Error', description: 'Failed to remove item', variant: 'destructive' })
     } finally {
       setUpdatingItem(null)
     }
@@ -92,7 +87,7 @@ export default function CartPage() {
 
   const cartItems = cart?.items || []
   const subtotal  = cartItems.reduce((s, i) => s + parseFloat(i.product.price) * i.quantity, 0)
-  const shipping  = subtotal > 25000 ? 0 : 2  // TODO: change back to 2000 after testing
+  const shipping  = subtotal > 25000 ? 0 : 5
   const total     = subtotal + shipping
 
   if (cartItems.length === 0) {
@@ -100,13 +95,13 @@ export default function CartPage() {
       <div className="container mx-auto px-4 py-20 animate-fade-in">
         <div className="max-w-md mx-auto text-center">
           <ShoppingBag className="w-24 h-24 mx-auto mb-6 text-muted-foreground animate-float" />
-          <h1 className="text-3xl font-bold mb-4">Votre panier est vide</h1>
+          <h1 className="text-3xl font-bold mb-4">Your cart is empty</h1>
           <p className="text-muted-foreground mb-8">
-            Vous n&apos;avez pas encore ajouté d&apos;articles à votre panier.
+            You haven&apos;t added any items to your cart yet.
           </p>
           <Button size="lg" asChild className="btn-press">
             <Link href="/products">
-              Commencer mes achats
+              Start shopping
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
@@ -117,7 +112,7 @@ export default function CartPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 animate-fade-in">
-      <h1 className="text-4xl font-bold mb-8">Mon panier</h1>
+      <h1 className="text-4xl font-bold mb-8">My Cart</h1>
 
       <div className="grid md:grid-cols-3 gap-8">
         {/* Cart Items */}
@@ -170,12 +165,12 @@ export default function CartPage() {
                           <p className="text-2xl font-bold text-primary">
                             {fcfa(parseFloat(item.product.price) * item.quantity)}
                           </p>
-                          <p className="text-sm text-muted-foreground">{fcfa(item.product.price)} / unité</p>
+                          <p className="text-sm text-muted-foreground">{fcfa(item.product.price)} / unit</p>
                         </div>
                       </div>
                       {item.product.stock_quantity < 10 && (
                         <Badge variant="destructive" className="mt-2">
-                          Plus que {item.product.stock_quantity} en stock !
+                          Only {item.product.stock_quantity} left in stock!
                         </Badge>
                       )}
                     </div>
@@ -190,25 +185,25 @@ export default function CartPage() {
         <div className="animate-fade-in-right">
           <Card className="sticky top-4">
             <CardHeader>
-              <CardTitle>Résumé de la commande</CardTitle>
+              <CardTitle>Order Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Sous-total ({cartItems.length} article{cartItems.length > 1 ? 's' : ''})</span>
+                <span className="text-muted-foreground">Subtotal ({cartItems.length} item{cartItems.length > 1 ? 's' : ''})</span>
                 <span className="font-medium">{fcfa(subtotal)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Livraison</span>
+                <span className="text-muted-foreground">Delivery</span>
                 <span className="font-medium">
                   {shipping === 0
-                    ? <Badge variant="secondary" className="bg-green-100 text-green-800">GRATUITE</Badge>
+                    ? <Badge variant="secondary" className="bg-green-100 text-green-800">FREE</Badge>
                     : fcfa(shipping)}
                 </span>
               </div>
               {subtotal < 25000 && shipping > 0 && (
                 <div className="bg-primary/10 p-3 rounded-lg">
                   <p className="text-sm text-primary font-medium">
-                    Ajoutez {fcfa(25000 - subtotal)} pour la livraison gratuite 🚚
+                    Add {fcfa(25000 - subtotal)} more for free delivery 🚚
                   </p>
                 </div>
               )}
@@ -221,11 +216,11 @@ export default function CartPage() {
             </CardContent>
             <CardFooter className="flex-col gap-2">
               <Button size="lg" className="w-full btn-press" onClick={() => router.push('/checkout')}>
-                Passer la commande
+                Proceed to checkout
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <Button variant="outline" size="lg" className="w-full btn-press" asChild>
-                <Link href="/products">Continuer mes achats</Link>
+                <Link href="/products">Continue shopping</Link>
               </Button>
             </CardFooter>
           </Card>
@@ -234,5 +229,3 @@ export default function CartPage() {
     </div>
   )
 }
-
-

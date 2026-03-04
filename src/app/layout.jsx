@@ -10,6 +10,14 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata = {
   title: 'NexCart - Smart E-Commerce Platform',
   description: 'AI-powered shopping experience with personalized recommendations',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/nexcart-logo.png', type: 'image/png', sizes: '512x512' },
+    ],
+    apple: '/apple-touch-icon.png',
+    shortcut: '/favicon.ico',
+  },
   other: {
     google: 'notranslate',
   },

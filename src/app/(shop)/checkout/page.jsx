@@ -26,34 +26,33 @@ const ORANGE_PREFIX  = /^(\+?237)?6(9[0-9]|55|56|57)[0-9]{5,6}$/
 
 function validateCheckoutForm(data, paymentMethod) {
   const errors = {}
-  if (!data.firstName.trim()) errors.firstName = 'Le prénom est requis'
-  if (!data.lastName.trim())  errors.lastName  = 'Le nom est requis'
+  if (!data.firstName.trim()) errors.firstName = 'First name is required'
+  if (!data.lastName.trim())  errors.lastName  = 'Last name is required'
   if (!data.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
-    errors.email = 'Adresse email invalide'
+    errors.email = 'Invalid email address'
 
   const phone = data.phone.replace(/\s/g, '')
   if (!phone) {
-    errors.phone = 'Le numéro de téléphone est requis'
+    errors.phone = 'Phone number is required'
   } else if (!CAMEROON_PHONE.test(phone)) {
-    errors.phone = 'Numéro camerounais invalide (ex: +237 6XX XXX XXX)'
+    errors.phone = 'Invalid Cameroonian number (e.g. +237 6XX XXX XXX)'
   } else if (paymentMethod === 'MTN' && !MTN_PREFIX.test(phone)) {
-    errors.phone = 'Ce numéro ne semble pas être un numéro MTN (65x, 67x, 68x…)'
+    errors.phone = 'This number does not appear to be an MTN number (65x, 67x, 68x…)'
   } else if (paymentMethod === 'ORANGE' && !ORANGE_PREFIX.test(phone)) {
-    errors.phone = 'Ce numéro ne semble pas être un numéro Orange (69x, 655-657…)'
+    errors.phone = 'This number does not appear to be an Orange number (69x, 655-657…)'
   }
 
-  if (!data.address.trim()) errors.address = "L'adresse est requise"
-  if (!data.city.trim())    errors.city    = 'La ville est requise'
+  if (!data.address.trim()) errors.address = 'Address is required'
+  if (!data.city.trim())    errors.city    = 'City is required'
   return errors
 }
 
-// ── MTN Logo (betPawa-style: yellow rounded square + bold MTN text) ──
+// ── MTN Logo ──────────────────────────────────────────────────
 function MtnLogo({ active }) {
   return (
     <div className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all ${
       active ? 'bg-yellow-400' : 'bg-gray-100'
     }`}>
-      {/* MTN yellow rounded square icon */}
       <div className="w-10 h-10 rounded-lg bg-yellow-400 border-2 border-yellow-500 flex items-center justify-center shadow-sm">
         <span style={{ fontFamily: 'Arial Black, Arial', fontWeight: 900, fontSize: '11px', color: '#000', letterSpacing: '-0.5px' }}>MTN</span>
       </div>
@@ -65,13 +64,12 @@ function MtnLogo({ active }) {
   )
 }
 
-// ── Orange Logo (betPawa-style: orange circle + Orange text) ──
+// ── Orange Logo ───────────────────────────────────────────────
 function OrangeLogo({ active }) {
   return (
     <div className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all ${
       active ? 'bg-orange-100' : 'bg-gray-100'
     }`}>
-      {/* Orange circle icon */}
       <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center shadow-sm">
         <div className="w-5 h-5 rounded-full bg-white opacity-90" />
       </div>
@@ -99,25 +97,33 @@ function Field({ label, error, children }) {
 }
 
 // ── Payment status modal ─────────────────────────────────────────
-function PaymentStatusModal({ status, orderId, onClose }) {
+function PaymentStatusModal({ status, orderId, onClose, paymentMethod }) {
   const router = useRouter()
   if (!status) return null
-  const isPending  = status === 'pending'
-  const isSuccess  = status === 'success'
-  const isFailed   = status === 'failed'
+  const isPending = status === 'pending'
+  const isSuccess = status === 'success'
+  const isFailed  = status === 'failed'
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-scale-in">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-background rounded-2xl p-8 max-w-sm w-full mx-4 shadow-2xl text-center">
         {isPending && (
           <>
             <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-yellow-100 flex items-center justify-center animate-pulse">
               <Phone className="h-10 w-10 text-yellow-500" />
             </div>
-            <h2 className="text-xl font-bold mb-2">Paiement en cours…</h2>
+            <h2 className="text-xl font-bold mb-2">Check your phone!</h2>
             <p className="text-muted-foreground text-sm">
-              Vérifiez votre téléphone et confirmez le paiement Mobile Money.
+              A Mobile Money payment prompt has been sent to your phone. Please approve it to complete your order.
             </p>
+            <div className="mt-3 bg-muted rounded-xl p-3 text-sm text-left space-y-1">
+              <p className="font-semibold text-foreground">📵 No prompt appeared?</p>
+              {paymentMethod === 'ORANGE' ? (
+                <p className="text-muted-foreground">Dial <strong className="text-orange-500">#150*50#</strong> on your Orange phone to approve manually.</p>
+              ) : (
+                <p className="text-muted-foreground">Dial <strong className="text-yellow-600">*126#</strong> on your MTN phone and follow the prompts to approve.</p>
+              )}
+            </div>
             <div className="mt-4 flex justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
@@ -128,10 +134,10 @@ function PaymentStatusModal({ status, orderId, onClose }) {
             <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center animate-scale-in">
               <CheckCircle className="h-10 w-10 text-green-500" />
             </div>
-            <h2 className="text-xl font-bold mb-2">Paiement réussi !</h2>
-            <p className="text-muted-foreground text-sm mb-4">Votre commande a été confirmée.</p>
+            <h2 className="text-xl font-bold mb-2">Payment successful!</h2>
+            <p className="text-muted-foreground text-sm mb-4">Your order has been confirmed.</p>
             <Button className="w-full" onClick={() => router.push(`/orders`)}>
-              Voir mes commandes <ChevronRight className="ml-1 h-4 w-4" />
+              View my orders <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           </>
         )}
@@ -140,9 +146,9 @@ function PaymentStatusModal({ status, orderId, onClose }) {
             <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
               <AlertCircle className="h-10 w-10 text-red-500" />
             </div>
-            <h2 className="text-xl font-bold mb-2">Paiement échoué</h2>
-            <p className="text-muted-foreground text-sm mb-4">Le paiement n&apos;a pas abouti. Réessayez.</p>
-            <Button variant="outline" className="w-full" onClick={onClose}>Réessayer</Button>
+            <h2 className="text-xl font-bold mb-2">Payment failed</h2>
+            <p className="text-muted-foreground text-sm mb-4">The payment could not be completed. Please try again.</p>
+            <Button variant="outline" className="w-full" onClick={onClose}>Try again</Button>
           </>
         )}
       </div>
@@ -162,9 +168,9 @@ export default function CheckoutPage() {
   const [processing, setProcessing] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState('MTN')
   const [fieldErrors, setFieldErrors]     = useState({})
-  const [paymentStatus, setPaymentStatus] = useState(null) // null | 'pending' | 'success' | 'failed'
+  const [paymentStatus, setPaymentStatus] = useState(null)
   const [createdOrderId, setCreatedOrderId] = useState(null)
-  const [pendingOrder, setPendingOrder] = useState(null)  // order created but payment failed — skip re-creating
+  const [pendingOrder, setPendingOrder] = useState(null)
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -173,9 +179,9 @@ export default function CheckoutPage() {
     phone:     '',
     address:   '',
     city:      'Tiko',
-    state:     'Sud-Ouest',
+    state:     'South West',
     zipCode:   '',
-    country:   'Cameroun',
+    country:   'Cameroon',
   })
 
   const loadUserProfile = useCallback(async () => {
@@ -194,13 +200,11 @@ export default function CheckoutPage() {
   const loadCart = useCallback(async () => {
     setLoading(true)
     try {
-      // Always fetch fresh from server ? never rely on cached state
       const cartData = await api.getCart()
       setCart(cartData)
       if (!cartData?.items?.length) {
-        // Also clear the local cart store so navbar badge resets
         resetCart()
-        toast({ title: 'Panier vide', description: 'Ajoutez des articles avant de commander', variant: 'destructive' })
+        toast({ title: 'Empty cart', description: 'Add items before placing an order', variant: 'destructive' })
         router.push('/products')
         return
       }
@@ -223,11 +227,9 @@ export default function CheckoutPage() {
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
-    // Clear error on change
     if (fieldErrors[name]) setFieldErrors(prev => ({ ...prev, [name]: undefined }))
   }
 
-  // Poll payment status every 5 seconds for up to 2 minutes
   const pollPaymentStatus = async (transactionId, orderId) => {
     const maxAttempts = 24
     let attempts = 0
@@ -250,66 +252,65 @@ export default function CheckoutPage() {
     const errors = validateCheckoutForm(formData, paymentMethod)
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors)
-      toast({ title: 'Formulaire invalide', description: 'Veuillez corriger les erreurs', variant: 'destructive' })
+      toast({ title: 'Invalid form', description: 'Please correct the errors and try again', variant: 'destructive' })
       return
     }
 
     setProcessing(true)
     try {
-      // 1. Create order — reuse pending order if payment failed previously
       let order = pendingOrder
       if (!order) {
         order = await api.createOrder({
-          email:                   formData.email,
-          phone:                   formData.phone.replace(/\s/g, ''),
-          shipping_first_name:     formData.firstName,
-          shipping_last_name:      formData.lastName,
-          shipping_address_line1:  formData.address,
-          shipping_city:           formData.city,
-          shipping_state:          formData.state,
-          shipping_country:        formData.country,
-          shipping_postal_code:    formData.zipCode || '00000',
+          email:                    formData.email,
+          phone:                    formData.phone.replace(/\s/g, ''),
+          shipping_first_name:      formData.firstName,
+          shipping_last_name:       formData.lastName,
+          shipping_address_line1:   formData.address,
+          shipping_city:            formData.city,
+          shipping_state:           formData.state,
+          shipping_country:         formData.country,
+          shipping_postal_code:     formData.zipCode || '00000',
           billing_same_as_shipping: true,
-          payment_method:          paymentMethod,
+          payment_method:           paymentMethod,
         })
         setPendingOrder(order)
         setCreatedOrderId(order.id)
-        // Reset local cart store — server already cleared it
         resetCart()
       }
 
-      // 2. Initiate MeSomb payment
       const phone = formData.phone.replace(/\s/g, '').replace(/^\+/, '')
       const normalizedPhone = phone.startsWith('237') ? phone : `237${phone.replace(/^0/, '')}`
 
+      // Show the modal BEFORE the API call so user sees it immediately
+      setPaymentStatus('pending')
+
       const payment = await api.initiatePayment(order.id, normalizedPhone, paymentMethod)
 
-      // 3. Show pending modal and start polling
-      setPaymentStatus('pending')
       if (payment.transaction_id) {
         await pollPaymentStatus(payment.transaction_id, order.id)
       } else {
-        // No transaction_id means gateway accepted it synchronously
         setPaymentStatus('success')
       }
     } catch (err) {
       console.error(err)
+      setPaymentStatus(null) // close the pending modal on error
       const rawError = err.response?.data?.error || err.message || ''
-      // Map known MeSomb errors to friendly messages
       let friendlyError
       if (/balance.*low|low.*balance|payee.*limit|not.*allowed|insufficient/i.test(rawError)) {
         friendlyError = paymentMethod === 'ORANGE'
-          ? 'Solde insuffisant sur votre compte Orange Money. Rechargez votre compte et réessayez.'
-          : 'Solde insuffisant sur votre compte MTN Mobile Money. Rechargez votre compte et réessayez.'
+          ? 'Insufficient balance on your Orange Money account. Please top up and try again.'
+          : 'Insufficient balance on your MTN Mobile Money account. Please top up and try again.'
       } else if (/invalid.*number|payer/i.test(rawError)) {
-        friendlyError = 'Numéro de téléphone invalide ou non enregistré sur ' + paymentMethod
-      } else if (/timeout|timed out/i.test(rawError)) {
-        friendlyError = 'La demande de paiement a expiré. Vérifiez votre téléphone et réessayez.'
+        friendlyError = 'Invalid phone number or not registered on ' + paymentMethod
+      } else if (/too much time|took too long|timeout|timed out|expired/i.test(rawError)) {
+        friendlyError = paymentMethod === 'ORANGE'
+          ? 'You didn\'t confirm in time. Dial #150*50# on your Orange phone to approve manually, then try again.'
+          : 'You didn\'t confirm in time. Dial *126# on your MTN phone to approve manually, then try again.'
       } else {
-        friendlyError = rawError || 'Échec du traitement de la commande'
+        friendlyError = rawError || 'Failed to process the order'
       }
       toast({
-        title: 'Paiement échoué',
+        title: 'Payment failed',
         description: friendlyError,
         variant: 'destructive',
       })
@@ -332,7 +333,7 @@ export default function CheckoutPage() {
 
   const cartItems = cart?.items || []
   const subtotal  = cartItems.reduce((s, i) => s + parseFloat(i.product.price) * i.quantity, 0)
-  const shipping  = subtotal > 25000 ? 0 : 2000
+  const shipping  = subtotal > 25000 ? 0 : 5
   const total     = subtotal + shipping
 
   return (
@@ -341,11 +342,12 @@ export default function CheckoutPage() {
         status={paymentStatus}
         orderId={createdOrderId}
         onClose={() => setPaymentStatus(null)}
+        paymentMethod={paymentMethod}
       />
 
       <div className="container mx-auto px-4 py-8 animate-fade-in">
-        <h1 className="text-4xl font-bold mb-2">Paiement</h1>
-        <p className="text-muted-foreground mb-8">Livraison vers Tiko, Cameroun 🇨🇲</p>
+        <h1 className="text-4xl font-bold mb-2">Checkout</h1>
+        <p className="text-muted-foreground mb-8">Delivery to Tiko, Cameroon 🇨🇲</p>
 
         <form onSubmit={handleSubmit}>
           <div className="grid md:grid-cols-3 gap-8">
@@ -356,16 +358,16 @@ export default function CheckoutPage() {
               <Card className="animate-fade-in stagger-1">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <User className="h-5 w-5 text-primary" /> Informations de contact
+                    <User className="h-5 w-5 text-primary" /> Contact Information
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <Field label="Prénom" error={fieldErrors.firstName}>
+                    <Field label="First Name" error={fieldErrors.firstName}>
                       <Input name="firstName" value={formData.firstName} onChange={handleInputChange}
                         className={fieldErrors.firstName ? 'border-destructive' : ''} />
                     </Field>
-                    <Field label="Nom" error={fieldErrors.lastName}>
+                    <Field label="Last Name" error={fieldErrors.lastName}>
                       <Input name="lastName" value={formData.lastName} onChange={handleInputChange}
                         className={fieldErrors.lastName ? 'border-destructive' : ''} />
                     </Field>
@@ -377,7 +379,7 @@ export default function CheckoutPage() {
                         className={`pl-10 ${fieldErrors.email ? 'border-destructive' : ''}`} />
                     </div>
                   </Field>
-                  <Field label={`Numéro de téléphone ${paymentMethod}`} error={fieldErrors.phone}>
+                  <Field label={`${paymentMethod} Phone Number`} error={fieldErrors.phone}>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input name="phone" type="tel" placeholder="+237 6XX XXX XXX"
@@ -385,7 +387,7 @@ export default function CheckoutPage() {
                         className={`pl-10 ${fieldErrors.phone ? 'border-destructive' : ''}`} />
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Ce numéro recevra la demande de paiement Mobile Money
+                      This number will receive the Mobile Money payment request
                     </p>
                   </Field>
                 </CardContent>
@@ -395,32 +397,32 @@ export default function CheckoutPage() {
               <Card className="animate-fade-in stagger-2">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-primary" /> Adresse de livraison
+                    <MapPin className="h-5 w-5 text-primary" /> Shipping Address
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Field label="Adresse" error={fieldErrors.address}>
-                    <Input name="address" placeholder="Rue, quartier…"
+                  <Field label="Address" error={fieldErrors.address}>
+                    <Input name="address" placeholder="Street, neighbourhood…"
                       value={formData.address} onChange={handleInputChange}
                       className={fieldErrors.address ? 'border-destructive' : ''} />
                   </Field>
                   <div className="grid grid-cols-2 gap-4">
-                    <Field label="Ville" error={fieldErrors.city}>
+                    <Field label="City" error={fieldErrors.city}>
                       <Input name="city" value={formData.city} onChange={handleInputChange}
                         className={fieldErrors.city ? 'border-destructive' : ''} />
                     </Field>
                     <div className="space-y-1">
-                      <Label>Région</Label>
+                      <Label>Region</Label>
                       <Input name="state" value={formData.state} onChange={handleInputChange} />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <Label>Code postal</Label>
+                      <Label>Postal Code</Label>
                       <Input name="zipCode" value={formData.zipCode} onChange={handleInputChange} />
                     </div>
                     <div className="space-y-1">
-                      <Label>Pays</Label>
+                      <Label>Country</Label>
                       <Input name="country" value={formData.country} readOnly className="bg-muted" />
                     </div>
                   </div>
@@ -430,7 +432,7 @@ export default function CheckoutPage() {
               {/* Payment Method */}
               <Card className="animate-fade-in stagger-3">
                 <CardHeader>
-                  <CardTitle>Mode de paiement</CardTitle>
+                  <CardTitle>Payment Method</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -447,7 +449,7 @@ export default function CheckoutPage() {
                       <MtnLogo active={paymentMethod === 'MTN'} />
                       <span className="text-sm font-semibold">MTN Mobile Money</span>
                       {paymentMethod === 'MTN' && (
-                        <Badge className="bg-yellow-400 text-black text-xs">Sélectionné ✓</Badge>
+                        <Badge className="bg-yellow-400 text-black text-xs">Selected ✓</Badge>
                       )}
                     </button>
 
@@ -464,14 +466,14 @@ export default function CheckoutPage() {
                       <OrangeLogo active={paymentMethod === 'ORANGE'} />
                       <span className="text-sm font-semibold">Orange Money</span>
                       {paymentMethod === 'ORANGE' && (
-                        <Badge className="bg-orange-500 text-white text-xs">Sélectionné ✓</Badge>
+                        <Badge className="bg-orange-500 text-white text-xs">Selected ✓</Badge>
                       )}
                     </button>
                   </div>
 
                   <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted p-3 rounded-lg">
                     <Lock className="h-4 w-4 shrink-0 text-green-600" />
-                    <span>Paiement sécurisé via <strong>MeSomb</strong> — chiffré et protégé</span>
+                    <span>Secure payment via <strong>MeSomb</strong> — encrypted and protected</span>
                   </div>
                 </CardContent>
               </Card>
@@ -481,7 +483,7 @@ export default function CheckoutPage() {
             <div className="animate-fade-in-right">
               <Card className="sticky top-4">
                 <CardHeader>
-                  <CardTitle>Récapitulatif</CardTitle>
+                  <CardTitle>Order Summary</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Cart items */}
@@ -498,7 +500,7 @@ export default function CheckoutPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm line-clamp-1">{item.product.name}</p>
-                          <p className="text-xs text-muted-foreground">Qté : {item.quantity}</p>
+                          <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
                           <p className="text-sm font-semibold text-primary">
                             {fcfa(parseFloat(item.product.price) * item.quantity)}
                           </p>
@@ -509,20 +511,20 @@ export default function CheckoutPage() {
 
                   <div className="border-t pt-4 space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Sous-total</span>
+                      <span className="text-muted-foreground">Subtotal</span>
                       <span className="font-medium">{fcfa(subtotal)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Livraison</span>
+                      <span className="text-muted-foreground">Delivery</span>
                       <span className="font-medium">
                         {shipping === 0
-                          ? <span className="text-green-600 font-semibold">GRATUITE</span>
+                          ? <span className="text-green-600 font-semibold">FREE</span>
                           : fcfa(shipping)}
                       </span>
                     </div>
                     {subtotal < 25000 && (
                       <p className="text-xs text-primary bg-primary/10 p-2 rounded-lg">
-                        Ajoutez {fcfa(25000 - subtotal)} pour la livraison gratuite 🚚
+                        Add {fcfa(25000 - subtotal)} more for free delivery 🚚
                       </p>
                     )}
                     <div className="flex justify-between items-center pt-2 border-t">
@@ -540,19 +542,19 @@ export default function CheckoutPage() {
                     {processing ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Traitement…
+                        Processing…
                       </>
                     ) : (
                       <>
                         <Lock className="mr-2 h-4 w-4" />
-                        Payer {fcfa(total)} via {paymentMethod}
+                        Pay {fcfa(total)} via {paymentMethod}
                       </>
                     )}
                   </Button>
 
                   <p className="text-xs text-center text-muted-foreground">
-                    En passant votre commande, vous acceptez nos{' '}
-                    <a href="/terms" className="underline">conditions d&apos;utilisation</a>
+                    By placing your order, you agree to our{' '}
+                    <a href="/terms" className="underline">terms of use</a>
                   </p>
                 </CardContent>
               </Card>
@@ -563,6 +565,3 @@ export default function CheckoutPage() {
     </>
   )
 }
-
-
-

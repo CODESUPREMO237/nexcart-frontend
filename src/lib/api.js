@@ -158,6 +158,20 @@ class APIClient {
     return response.data;
   }
 
+  async forgotPassword(email) {
+    const response = await this.client.post('/users/auth/forgot-password/', { email });
+    return response.data;
+  }
+
+  async resetPassword(email, otp, newPassword) {
+    const response = await this.client.post('/users/auth/reset-password/', {
+      email,
+      otp,
+      new_password: newPassword,
+    });
+    return response.data;
+  }
+
   // Products
   async getProducts(params) {
     // Add timestamp to bust cache

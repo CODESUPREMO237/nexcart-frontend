@@ -43,7 +43,7 @@ function ProductsList() {
       })
       setProducts(response.results || response)
     } catch {
-      toast({ title: 'Erreur', description: 'Impossible de charger les produits', variant: 'destructive' })
+      toast({ title: 'Error', description: 'Could not load products', variant: 'destructive' })
     } finally {
       setLoading(false)
     }
@@ -78,19 +78,19 @@ function ProductsList() {
 
   const handleAddToCart = async (product) => {
     if (!isAuthenticated) {
-      toast({ title: 'Connexion requise', description: 'Connectez-vous pour ajouter au panier', variant: 'destructive' })
+      toast({ title: 'Login required', description: 'Please sign in to add items to your cart', variant: 'destructive' })
       return
     }
     setAddingToCart(product.id)
     try {
       const result = await addItem(product.id, 1)
       if (result?.success) {
-        toast({ title: 'Added to cart', description: `${product.name} a ete ajoute.`, variant: 'success' })
+        toast({ title: 'Added to cart!', description: `${product.name} has been added to your cart.`, variant: 'success' })
       } else {
-        toast({ title: 'Erreur', description: result?.error || 'Impossible d\'ajouter au panier', variant: 'destructive' })
+        toast({ title: 'Error', description: result?.error || 'Could not add item to cart', variant: 'destructive' })
       }
     } catch {
-      toast({ title: 'Erreur', description: 'Impossible d\'ajouter au panier', variant: 'destructive' })
+      toast({ title: 'Error', description: 'Could not add item to cart', variant: 'destructive' })
     } finally {
       setAddingToCart(null)
     }
@@ -98,15 +98,15 @@ function ProductsList() {
 
   const handleAddToWishlist = async (product) => {
     if (!isAuthenticated) {
-      toast({ title: 'Connexion requise', description: 'Connectez-vous pour ajouter aux favoris', variant: 'destructive' })
+      toast({ title: 'Login required', description: 'Please sign in to save items to your wishlist', variant: 'destructive' })
       return
     }
     setAddingToWishlist(product.id)
     try {
       await api.addToWishlist(product.id)
-      toast({ title: 'Added to wishlist', description: `${product.name} est dans vos favoris.`, variant: 'success' })
+      toast({ title: 'Added to wishlist!', description: `${product.name} has been saved to your wishlist.`, variant: 'success' })
     } catch (error) {
-      toast({ title: 'Erreur', description: error.response?.data?.error || 'Impossible d\'ajouter aux favoris', variant: 'destructive' })
+      toast({ title: 'Error', description: error.response?.data?.error || 'Could not add item to wishlist', variant: 'destructive' })
     } finally {
       setAddingToWishlist(null)
     }
@@ -134,29 +134,29 @@ function ProductsList() {
   return (
     <div className="container mx-auto px-4 py-8 animate-fade-in">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <h1 className="text-4xl font-bold">Tous les produits</h1>
+        <h1 className="text-4xl font-bold">All Products</h1>
         <div className="flex gap-2 w-full md:w-auto">
           <div className="relative flex-1 md:w-80">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Rechercher des produits..."
+              placeholder="Search products..."
               className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <Button variant="outline" className="btn-press">
-            <Filter className="h-4 w-4 mr-2" /> Filtrer
+            <Filter className="h-4 w-4 mr-2" /> Filter
           </Button>
         </div>
       </div>
 
       {products.length === 0 ? (
         <div className="text-center py-20 animate-scale-in">
-          <p className="text-2xl text-muted-foreground mb-4">Aucun produit trouve</p>
+          <p className="text-2xl text-muted-foreground mb-4">No products found</p>
           <Button asChild className="btn-press">
-            <Link href="/">Retour a l&apos;accueil</Link>
+            <Link href="/">Back to Home</Link>
           </Button>
         </div>
       ) : (
@@ -182,7 +182,7 @@ function ProductsList() {
                         />
                       ) : (
                         <div className="flex items-center justify-center w-full h-full bg-muted">
-                          <span className="text-muted-foreground">Pas d&apos;image</span>
+                          <span className="text-muted-foreground">No image</span>
                         </div>
                       )}
                     </Link>
@@ -230,7 +230,7 @@ function ProductsList() {
                       ) : !isOutOfStock ? (
                         <ShoppingCart className="mr-2 h-4 w-4" />
                       ) : null}
-                      {isAdding ? 'Ajout en cours...' : isOutOfStock ? 'Rupture de stock' : 'Ajouter au panier'}
+                      {isAdding ? 'Adding...' : isOutOfStock ? 'Out of stock' : 'Add to cart'}
                     </span>
                   </Button>
                 </CardFooter>

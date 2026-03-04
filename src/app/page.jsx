@@ -16,7 +16,7 @@ import Link from 'next/link'
 import ProductImage from '@/components/ProductImage'
 
 const fcfa = (n) =>
-  new Intl.NumberFormat('fr-CM', { style: 'currency', currency: 'XAF', maximumFractionDigits: 0 }).format(n)
+  new Intl.NumberFormat('en-CM', { style: 'currency', currency: 'XAF', maximumFractionDigits: 0 }).format(n)
 
 export default function HomePage() {
   const { addItem } = useCartStore()
@@ -26,7 +26,7 @@ export default function HomePage() {
   const [recommendations, setRecommendations]   = useState([])
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState(null)
-  const [addingToCart, setAddingToCart]     = useState(null)
+  const [addingToCart, setAddingToCart]         = useState(null)
   const [addingToWishlist, setAddingToWishlist] = useState(null)
 
   useEffect(() => { loadData() }, [])
@@ -41,7 +41,7 @@ export default function HomePage() {
       setFeaturedProducts(formatProductsArray(featured.results || featured || []))
       setRecommendations(formatProductsArray(recommended.results || recommended || []))
     } catch {
-      setError('Impossible de charger les produits. Vérifiez que le serveur est démarré.')
+      setError('Unable to load products. Please make sure the server is running.')
     } finally {
       setLoading(false)
     }
@@ -49,7 +49,7 @@ export default function HomePage() {
 
   const handleAddToCart = async (product) => {
     if (!isAuthenticated) {
-      toast({ title: 'Connexion requise', description: 'Connectez-vous pour ajouter au panier', variant: 'destructive' })
+      toast({ title: 'Login required', description: 'Please sign in to add items to your cart', variant: 'destructive' })
       window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname)
       return
     }
@@ -57,12 +57,12 @@ export default function HomePage() {
     try {
       const result = await addItem(product.id, 1)
       if (result?.success) {
-        toast({ title: '🛒 Ajouté au panier !', description: `${product.name} a été ajouté à votre panier.`, variant: 'success' })
+        toast({ title: '🛒 Added to cart!', description: `${product.name} has been added to your cart.`, variant: 'success' })
       } else if (result?.error) {
-        toast({ title: 'Erreur', description: result.error, variant: 'destructive' })
+        toast({ title: 'Error', description: result.error, variant: 'destructive' })
       }
     } catch {
-      toast({ title: 'Erreur', description: 'Impossible d\'ajouter au panier', variant: 'destructive' })
+      toast({ title: 'Error', description: 'Could not add item to cart', variant: 'destructive' })
     } finally {
       setAddingToCart(null)
     }
@@ -70,16 +70,16 @@ export default function HomePage() {
 
   const handleAddToWishlist = async (product) => {
     if (!isAuthenticated) {
-      toast({ title: 'Connexion requise', description: 'Connectez-vous pour ajouter aux favoris', variant: 'destructive' })
+      toast({ title: 'Login required', description: 'Please sign in to save items to your wishlist', variant: 'destructive' })
       return
     }
     setAddingToWishlist(product.id)
     try {
       await api.addToWishlist(product.id)
       await api.trackActivity('wishlist', product.id)
-      toast({ title: '❤️ Ajouté aux favoris !', description: `${product.name} est dans votre liste de souhaits.`, variant: 'success' })
+      toast({ title: '❤️ Added to wishlist!', description: `${product.name} has been saved to your wishlist.`, variant: 'success' })
     } catch {
-      toast({ title: 'Erreur', description: 'Impossible d\'ajouter aux favoris', variant: 'destructive' })
+      toast({ title: 'Error', description: 'Could not add item to wishlist', variant: 'destructive' })
     } finally {
       setAddingToWishlist(null)
     }
@@ -127,24 +127,24 @@ export default function HomePage() {
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
             <Badge className="mb-6 text-base px-4 py-2 animate-scale-in" variant="secondary">
               <Sparkles className="w-4 h-4 mr-2" />
-              Shopping intelligent propulsé par l&apos;IA — Tiko, Cameroun 🇨🇲
+              AI-powered smart shopping — Tiko, Cameroon 🇨🇲
             </Badge>
             <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent leading-tight">
-              Bienvenue sur NexCart
+              Welcome to NexCart
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground mb-10 leading-relaxed">
-              Découvrez des produits adaptés à vos goûts grâce à notre système de recommandation intelligent.
-              Payez facilement par MTN ou Orange Money.
+              Discover products tailored to your taste with our intelligent recommendation system.
+              Pay easily with MTN or Orange Money.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild className="text-lg px-8 py-6 btn-press">
                 <Link href="/products">
-                  Explorer les produits
+                  Browse products
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild className="text-lg px-8 py-6 btn-press">
-                <Link href="/categories">Voir les catégories</Link>
+                <Link href="/categories">View categories</Link>
               </Button>
             </div>
           </div>
@@ -156,9 +156,9 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { icon: Truck, title: 'Livraison gratuite', desc: 'Commandes supérieures à 25 000 FCFA', delay: 'stagger-1' },
-              { icon: Shield, title: 'Paiement sécurisé', desc: '100% sécurisé via MeSomb', delay: 'stagger-2' },
-              { icon: Package, title: 'Retours faciles', desc: 'Politique de retour 30 jours', delay: 'stagger-3' },
+              { icon: Truck, title: 'Free delivery', desc: 'On orders over 25,000 FCFA', delay: 'stagger-1' },
+              { icon: Shield, title: 'Secure payments', desc: '100% secure via MeSomb', delay: 'stagger-2' },
+              { icon: Package, title: 'Easy returns', desc: '30-day return policy', delay: 'stagger-3' },
             ].map(({ icon: Icon, title, desc, delay }) => (
               <div key={title} className={`flex flex-col items-center text-center p-6 rounded-lg bg-background card-hover animate-fade-in ${delay}`}>
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 animate-float">
@@ -177,7 +177,7 @@ export default function HomePage() {
         <section className="container mx-auto px-4 py-8">
           <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 text-center animate-scale-in">
             <p className="text-destructive font-medium mb-2">{error}</p>
-            <Button onClick={loadData} className="mt-4 btn-press">Réessayer</Button>
+            <Button onClick={loadData} className="mt-4 btn-press">Try again</Button>
           </div>
         </section>
       )}
@@ -188,10 +188,10 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-8 animate-fade-in">
             <div className="flex items-center">
               <TrendingUp className="w-8 h-8 mr-3 text-primary" />
-              <h2 className="text-4xl font-bold">Produits vedettes</h2>
+              <h2 className="text-4xl font-bold">Featured Products</h2>
             </div>
             <Button variant="ghost" asChild>
-              <Link href="/products">Voir tout <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link href="/products">View all <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </div>
 
@@ -234,7 +234,7 @@ export default function HomePage() {
                     <div className="flex items-center mb-3">
                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                       <span className="ml-1 text-sm font-medium">{formatRating(product.average_rating)}</span>
-                      <span className="text-sm text-muted-foreground ml-2">({product.review_count || 0} avis)</span>
+                      <span className="text-sm text-muted-foreground ml-2">({product.review_count || 0} reviews)</span>
                     </div>
                     <div className="flex items-baseline gap-2">
                       <span className="text-2xl font-bold text-primary">{fcfa(product.price)}</span>
@@ -250,10 +250,10 @@ export default function HomePage() {
                       disabled={!product.is_in_stock || isAdding}
                     >
                       {isAdding ? (
-                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Ajout…</>
+                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Adding…</>
                       ) : product.is_in_stock ? (
-                        <><ShoppingCart className="mr-2 h-4 w-4" />Ajouter au panier</>
-                      ) : 'Rupture de stock'}
+                        <><ShoppingCart className="mr-2 h-4 w-4" />Add to cart</>
+                      ) : 'Out of stock'}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -269,7 +269,7 @@ export default function HomePage() {
           <div className="container mx-auto px-4">
             <div className="flex items-center mb-8 animate-fade-in">
               <Sparkles className="w-8 h-8 mr-3 text-primary" />
-              <h2 className="text-4xl font-bold">Recommandé pour vous</h2>
+              <h2 className="text-4xl font-bold">Recommended for you</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {recommendations.slice(0, 4).map((product, idx) => {
@@ -296,9 +296,9 @@ export default function HomePage() {
                       <Button className="w-full btn-press" variant="outline"
                         onClick={() => handleAddToCart(product)} disabled={!product.is_in_stock || isAdding}>
                         {isAdding ? (
-                          <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Ajout…</>
+                          <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Adding…</>
                         ) : (
-                          <><ShoppingCart className="mr-2 h-4 w-4" />Ajouter au panier</>
+                          <><ShoppingCart className="mr-2 h-4 w-4" />Add to cart</>
                         )}
                       </Button>
                     </CardFooter>
@@ -313,11 +313,11 @@ export default function HomePage() {
       {/* CTA */}
       <section className="py-20 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground">
         <div className="container mx-auto px-4 text-center animate-fade-in">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">Prêt à faire vos achats ?</h2>
-          <p className="text-xl mb-8 opacity-90">Rejoignez des milliers de clients satisfaits à Tiko et partout au Cameroun</p>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to start shopping?</h2>
+          <p className="text-xl mb-8 opacity-90">Join thousands of happy customers in Tiko and across Cameroon</p>
           <Button size="lg" variant="secondary" asChild className="text-lg px-8 py-6 btn-press">
             <Link href="/products">
-              Voir tous les produits <ArrowRight className="ml-2 h-5 w-5" />
+              Browse all products <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
         </div>
@@ -325,5 +325,3 @@ export default function HomePage() {
     </div>
   )
 }
-
-

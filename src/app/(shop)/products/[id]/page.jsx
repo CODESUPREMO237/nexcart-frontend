@@ -306,7 +306,7 @@ export default function ProductDetailPage() {
                     {fcfa(product.compare_price)}
                   </span>
                   <Badge variant="destructive">
-                    Économisez {fcfa(parseFloat(product.compare_price) - parseFloat(product.price))}
+                    Save {fcfa(parseFloat(product.compare_price) - parseFloat(product.price))}
                   </Badge>
                 </>
               )}
@@ -380,7 +380,7 @@ export default function ProductDetailPage() {
             <div className="flex flex-col items-center text-center">
               <Truck className="h-8 w-8 text-primary mb-2" />
               <span className="text-sm font-medium">Free Shipping</span>
-              <span className="text-xs text-muted-foreground">Commandes {'>'} 25 000 FCFA</span>
+              <span className="text-xs text-muted-foreground">On orders over 25,000 FCFA</span>
             </div>
             <div className="flex flex-col items-center text-center">
               <Shield className="h-8 w-8 text-primary mb-2" />

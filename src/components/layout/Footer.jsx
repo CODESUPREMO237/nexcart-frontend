@@ -30,7 +30,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              La meilleure destination shopping au Cameroun, propulsée par l&apos;IA. Découvrez des produits personnalisés rien que pour vous.
+              Cameroon&apos;s premier AI-powered shopping destination. Discover products personalised just for you.
             </p>
             <div className="flex space-x-2">
               <Button size="icon" variant="outline" className="h-9 w-9 btn-press">
@@ -50,13 +50,13 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div className="animate-fade-in stagger-2">
-            <h3 className="font-semibold text-lg mb-4">Liens rapides</h3>
+            <h3 className="font-semibold text-lg mb-4">Quick Links</h3>
             <ul className="space-y-2">
               {[
-                { href: '/products', label: 'Tous les produits' },
-                { href: '/categories', label: 'Catégories' },
-                { href: '/orders', label: 'Mes commandes' },
-                { href: '/wishlist', label: 'Ma liste de souhaits' },
+                { href: '/products', label: 'All Products' },
+                { href: '/categories', label: 'Categories' },
+                { href: '/orders', label: 'My Orders' },
+                { href: '/wishlist', label: 'My Wishlist' },
               ].map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors hover:translate-x-1 inline-block transition-transform">
@@ -69,13 +69,13 @@ export default function Footer() {
 
           {/* Customer Service */}
           <div className="animate-fade-in stagger-3">
-            <h3 className="font-semibold text-lg mb-4">Service client</h3>
+            <h3 className="font-semibold text-lg mb-4">Customer Service</h3>
             <ul className="space-y-2">
               {[
-                { href: '/about', label: 'À propos de nous' },
-                { href: '/contact', label: 'Contactez-nous' },
-                { href: '/shipping', label: 'Livraison' },
-                { href: '/returns', label: 'Retours & Échanges' },
+                { href: '/about', label: 'About Us' },
+                { href: '/contact', label: 'Contact Us' },
+                { href: '/shipping', label: 'Shipping' },
+                { href: '/returns', label: 'Returns & Exchanges' },
               ].map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors hover:translate-x-1 inline-block transition-transform">
@@ -90,18 +90,18 @@ export default function Footer() {
           <div className="animate-fade-in-right">
             <h3 className="font-semibold text-lg mb-4">Newsletter</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Abonnez-vous pour recevoir nos offres spéciales et mises à jour.
+              Subscribe to receive our special offers and updates.
             </p>
             <form onSubmit={handleNewsletterSubmit} className="space-y-2">
               <Input
                 type="email"
-                placeholder="Votre adresse email"
+                placeholder="Your email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
               <Button type="submit" className="w-full btn-press">
-                S&apos;abonner
+                Subscribe
               </Button>
             </form>
             <div className="mt-4 space-y-2">
@@ -115,7 +115,7 @@ export default function Footer() {
               </div>
               <div className="flex items-start space-x-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span>Tiko, Sud-Ouest, Cameroun</span>
+                <span>Tiko, South West, Cameroon</span>
               </div>
             </div>
           </div>
@@ -125,15 +125,15 @@ export default function Footer() {
         <div className="mt-12 pt-8 border-t">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} NexCart. Tous droits réservés. 🇨🇲 Tiko, Cameroun
+              © {new Date().getFullYear()} NexCart. All rights reserved. 🇨🇲 Tiko, Cameroon
             </p>
             <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
               <Link href="/privacy" className="hover:text-primary transition-colors">
-                Confidentialité
+                Privacy Policy
               </Link>
               <span>•</span>
               <Link href="/terms" className="hover:text-primary transition-colors">
-                Conditions d&apos;utilisation
+                Terms of Use
               </Link>
             </div>
           </div>
@@ -142,7 +142,3 @@ export default function Footer() {
     </footer>
   )
 }
-
-
-
-

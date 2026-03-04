@@ -18,17 +18,17 @@ const fcfa = (n) =>
   new Intl.NumberFormat('fr-CM', { style: 'currency', currency: 'XAF', maximumFractionDigits: 0 }).format(n)
 
 const STATUS_CONFIG = {
-  pending:    { icon: Clock,       label: 'En attente',    color: 'text-yellow-700 bg-yellow-50 border border-yellow-200' },
-  processing: { icon: Package,     label: 'En traitement', color: 'text-blue-700 bg-blue-50 border border-blue-200' },
-  shipped:    { icon: Truck,       label: 'Expédié',       color: 'text-indigo-700 bg-indigo-50 border border-indigo-200' },
-  delivered:  { icon: CheckCircle, label: 'Livré',         color: 'text-green-700 bg-green-50 border border-green-200' },
-  cancelled:  { icon: XCircle,     label: 'Annulé',        color: 'text-red-700 bg-red-50 border border-red-200' },
+  pending:    { icon: Clock,       label: 'Pending',    color: 'text-yellow-700 bg-yellow-50 border border-yellow-200' },
+  processing: { icon: Package,     label: 'Processing', color: 'text-blue-700 bg-blue-50 border border-blue-200' },
+  shipped:    { icon: Truck,       label: 'Shipped',    color: 'text-indigo-700 bg-indigo-50 border border-indigo-200' },
+  delivered:  { icon: CheckCircle, label: 'Delivered',  color: 'text-green-700 bg-green-50 border border-green-200' },
+  cancelled:  { icon: XCircle,     label: 'Cancelled',  color: 'text-red-700 bg-red-50 border border-red-200' },
 }
 
 const PAYMENT_CONFIG = {
-  completed: { label: 'Paiement réussi',     color: 'text-green-700 bg-green-50 border border-green-200', icon: '✓' },
-  pending:   { label: 'Paiement en attente', color: 'text-yellow-700 bg-yellow-50 border border-yellow-200', icon: '⏳' },
-  failed:    { label: 'Paiement échoué',     color: 'text-red-700 bg-red-50 border border-red-200', icon: '✗' },
+  completed: { label: 'Payment successful', color: 'text-green-700 bg-green-50 border border-green-200', icon: '✓' },
+  pending:   { label: 'Payment pending',    color: 'text-yellow-700 bg-yellow-50 border border-yellow-200', icon: '⏳' },
+  failed:    { label: 'Payment failed',     color: 'text-red-700 bg-red-50 border border-red-200', icon: '✗' },
 }
 
 function StatusBadge({ status }) {
@@ -66,7 +66,7 @@ export default function OrderDetailPage() {
         router.push('/login')
         return
       }
-      setError('Commande introuvable.')
+      setError('Order not found.')
     } finally {
       setLoading(false)
     }
@@ -88,9 +88,9 @@ export default function OrderDetailPage() {
   if (error || !order) return (
     <div className="container mx-auto px-4 py-20 text-center">
       <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-      <h1 className="text-2xl font-bold mb-2">Commande introuvable</h1>
+      <h1 className="text-2xl font-bold mb-2">Order not found</h1>
       <p className="text-muted-foreground mb-6">{error}</p>
-      <Button asChild><Link href="/orders">← Mes commandes</Link></Button>
+      <Button asChild><Link href="/orders">← My Orders</Link></Button>
     </div>
   )
 
@@ -103,13 +103,13 @@ export default function OrderDetailPage() {
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <Button variant="outline" size="sm" onClick={() => router.back()} className="btn-press">
-          <ArrowLeft className="h-4 w-4 mr-1" /> Retour
+          <ArrowLeft className="h-4 w-4 mr-1" /> Back
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold">Commande #{order.order_number}</h1>
+          <h1 className="text-2xl font-bold">Order #{order.order_number}</h1>
           <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
             <Calendar className="h-3.5 w-3.5" />
-            {new Date(order.created_at).toLocaleDateString('fr-CM', {
+            {new Date(order.created_at).toLocaleDateString('en-US', {
               weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
             })}
           </p>
@@ -129,7 +129,7 @@ export default function OrderDetailPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Package className="h-5 w-5 text-primary" />
-                Articles commandés ({order.items?.length || 0})
+                Order Items ({order.items?.length || 0})
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -139,7 +139,7 @@ export default function OrderDetailPage() {
                     {item.product_image ? (
                       <Image
                         src={item.product_image}
-                        alt={item.product_name || 'Produit'}
+                        alt={item.product_name || 'Product'}
                         fill className="object-cover"
                         unoptimized
                       />
@@ -170,21 +170,21 @@ export default function OrderDetailPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5 text-primary" /> Récapitulatif
+                <CreditCard className="h-5 w-5 text-primary" /> Summary
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Sous-total</span>
+                <span className="text-muted-foreground">Subtotal</span>
                 <span>{fcfa(subtotal)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Livraison</span>
-                <span>{shipping === 0 ? <span className="text-green-600 font-medium">GRATUITE</span> : fcfa(shipping)}</span>
+                <span className="text-muted-foreground">Delivery</span>
+                <span>{shipping === 0 ? <span className="text-green-600 font-medium">FREE</span> : fcfa(shipping)}</span>
               </div>
               {parseFloat(order.discount || 0) > 0 && (
                 <div className="flex justify-between text-sm text-green-600">
-                  <span>Réduction</span>
+                  <span>Discount</span>
                   <span>-{fcfa(order.discount)}</span>
                 </div>
               )}
@@ -205,7 +205,7 @@ export default function OrderDetailPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <MapPin className="h-4 w-4 text-primary" /> Adresse de livraison
+                <MapPin className="h-4 w-4 text-primary" /> Shipping Address
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-1 text-sm">
@@ -221,7 +221,7 @@ export default function OrderDetailPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Phone className="h-4 w-4 text-primary" /> Contact
+                <Phone className="h-4 w-4 text-primary" /> Contact Info
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
@@ -241,7 +241,7 @@ export default function OrderDetailPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Truck className="h-4 w-4 text-primary" /> Suivi
+                  <Truck className="h-4 w-4 text-primary" /> Tracking
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-sm">

@@ -16,17 +16,17 @@ const fcfa = (n) =>
   new Intl.NumberFormat('fr-CM', { style: 'currency', currency: 'XAF', maximumFractionDigits: 0 }).format(n)
 
 const STATUS_CONFIG = {
-  pending:    { icon: Clock,       label: 'En attente',    color: 'text-yellow-700 bg-yellow-50 border border-yellow-200' },
-  processing: { icon: Package,     label: 'En traitement', color: 'text-blue-700 bg-blue-50 border border-blue-200' },
-  shipped:    { icon: Package,     label: 'Expédié',       color: 'text-indigo-700 bg-indigo-50 border border-indigo-200' },
-  delivered:  { icon: CheckCircle, label: 'Livré',         color: 'text-green-700 bg-green-50 border border-green-200' },
-  cancelled:  { icon: XCircle,     label: 'Annulé',        color: 'text-red-700 bg-red-50 border border-red-200' },
+  pending:    { icon: Clock,       label: 'Pending',    color: 'text-yellow-700 bg-yellow-50 border border-yellow-200' },
+  processing: { icon: Package,     label: 'Processing', color: 'text-blue-700 bg-blue-50 border border-blue-200' },
+  shipped:    { icon: Package,     label: 'Shipped',    color: 'text-indigo-700 bg-indigo-50 border border-indigo-200' },
+  delivered:  { icon: CheckCircle, label: 'Delivered',  color: 'text-green-700 bg-green-50 border border-green-200' },
+  cancelled:  { icon: XCircle,     label: 'Cancelled',  color: 'text-red-700 bg-red-50 border border-red-200' },
 }
 
 const PAYMENT_CONFIG = {
-  completed: { label: 'Paiement réussi',     color: 'text-green-700 bg-green-50 border border-green-200' },
-  pending:   { label: 'Paiement en attente', color: 'text-yellow-700 bg-yellow-50 border border-yellow-200' },
-  failed:    { label: 'Paiement échoué',     color: 'text-red-700 bg-red-50 border border-red-200' },
+  completed: { label: 'Payment successful', color: 'text-green-700 bg-green-50 border border-green-200' },
+  pending:   { label: 'Payment pending',    color: 'text-yellow-700 bg-yellow-50 border border-yellow-200' },
+  failed:    { label: 'Payment failed',     color: 'text-red-700 bg-red-50 border border-red-200' },
 }
 
 function PaymentBadge({ status }) {
@@ -50,10 +50,10 @@ function StatusBadge({ status }) {
 
 export default function OrdersPage() {
   const { isLoading: authLoading, isAuthorized } = useRequireAuth()
-  const [orders, setOrders]     = useState([])
-  const [loading, setLoading]   = useState(true)
-  const [search, setSearch]     = useState('')
-  const [filter, setFilter]     = useState('all')
+  const [orders, setOrders]   = useState([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch]   = useState('')
+  const [filter, setFilter]   = useState('all')
 
   useEffect(() => { if (isAuthorized) loadOrders() }, [isAuthorized])
 
@@ -76,9 +76,8 @@ export default function OrdersPage() {
     return matchStatus && matchSearch
   })
 
-  // Stats
-  const totalSpent    = orders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + parseFloat(o.total_amount || 0), 0)
-  const totalOrders   = orders.length
+  const totalSpent     = orders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + parseFloat(o.total_amount || 0), 0)
+  const totalOrders    = orders.length
   const deliveredCount = orders.filter(o => o.status === 'delivered').length
 
   if (authLoading || !isAuthorized || loading) {
@@ -100,12 +99,12 @@ export default function OrdersPage() {
       <div className="container mx-auto px-4 py-20 animate-fade-in">
         <div className="max-w-md mx-auto text-center">
           <ShoppingBag className="w-24 h-24 mx-auto mb-6 text-muted-foreground animate-float" />
-          <h1 className="text-3xl font-bold mb-4">Aucune commande</h1>
+          <h1 className="text-3xl font-bold mb-4">No orders yet</h1>
           <p className="text-muted-foreground mb-8">
-            Vous n&apos;avez pas encore passé de commande. Commencez vos achats !
+            You haven&apos;t placed any orders yet. Start shopping!
           </p>
           <Button size="lg" asChild className="btn-press">
-            <Link href="/products">Voir les produits</Link>
+            <Link href="/products">Browse products</Link>
           </Button>
         </div>
       </div>
@@ -115,16 +114,16 @@ export default function OrdersPage() {
   return (
     <div className="container mx-auto px-4 py-8 animate-fade-in">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-4xl font-bold">Historique des commandes</h1>
-        <p className="text-muted-foreground">{totalOrders} commande{totalOrders > 1 ? 's' : ''}</p>
+        <h1 className="text-4xl font-bold">Order History</h1>
+        <p className="text-muted-foreground">{totalOrders} order{totalOrders > 1 ? 's' : ''}</p>
       </div>
 
-      {/* Stats cards */}
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {[
-          { icon: ShoppingBag, label: 'Total commandes', value: totalOrders, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { icon: CheckCircle,  label: 'Livraisons',      value: deliveredCount, color: 'text-green-600', bg: 'bg-green-50' },
-          { icon: TrendingUp,   label: 'Total dépensé',   value: fcfa(totalSpent), color: 'text-primary', bg: 'bg-primary/10' },
+          { icon: ShoppingBag, label: 'Total orders',   value: totalOrders,       color: 'text-blue-600',    bg: 'bg-blue-50' },
+          { icon: CheckCircle, label: 'Delivered',       value: deliveredCount,    color: 'text-green-600',   bg: 'bg-green-50' },
+          { icon: TrendingUp,  label: 'Total spent',     value: fcfa(totalSpent),  color: 'text-primary',     bg: 'bg-primary/10' },
         ].map(({ icon: Icon, label, value, color, bg }, idx) => (
           <Card key={label} className={`animate-fade-in stagger-${idx + 1} card-hover`}>
             <CardContent className="flex items-center gap-4 p-5">
@@ -144,7 +143,7 @@ export default function OrdersPage() {
       <div className="flex flex-col sm:flex-row gap-3 mb-6 animate-slide-down">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Rechercher par numéro ou produit…" className="pl-10"
+          <Input placeholder="Search by order number or product…" className="pl-10"
             value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <div className="flex gap-2 flex-wrap">
@@ -152,7 +151,7 @@ export default function OrdersPage() {
             <Button key={s} size="sm" variant={filter === s ? 'default' : 'outline'}
               className="btn-press capitalize"
               onClick={() => setFilter(s)}>
-              {s === 'all' ? 'Toutes' : STATUS_CONFIG[s]?.label || s}
+              {s === 'all' ? 'All' : STATUS_CONFIG[s]?.label || s}
             </Button>
           ))}
         </div>
@@ -162,7 +161,7 @@ export default function OrdersPage() {
       {filtered.length === 0 ? (
         <div className="text-center py-16 animate-scale-in">
           <Filter className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">Aucune commande ne correspond à votre recherche.</p>
+          <p className="text-muted-foreground">No orders match your search.</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -172,11 +171,11 @@ export default function OrdersPage() {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div>
                     <CardTitle className="text-lg mb-1">
-                      Commande #{order.order_number || order.id?.slice(0, 8)?.toUpperCase()}
+                      Order #{order.order_number || order.id?.slice(0, 8)?.toUpperCase()}
                     </CardTitle>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Calendar className="h-3.5 w-3.5" />
-                      {new Date(order.created_at).toLocaleDateString('fr-CM', {
+                      {new Date(order.created_at).toLocaleDateString('en-US', {
                         year: 'numeric', month: 'long', day: 'numeric'
                       })}
                     </div>
@@ -188,7 +187,7 @@ export default function OrdersPage() {
                     </div>
                     <Button variant="outline" size="sm" asChild className="btn-press">
                       <Link href={`/orders/${order.id}`}>
-                        <Eye className="h-4 w-4 mr-2" /> Détails
+                        <Eye className="h-4 w-4 mr-2" /> Details
                       </Link>
                     </Button>
                   </div>
@@ -196,7 +195,6 @@ export default function OrdersPage() {
               </CardHeader>
 
               <CardContent className="pt-6">
-                {/* Items */}
                 <div className="space-y-4">
                   {order.items?.slice(0, 3).map((item) => (
                     <div key={item.id} className="flex gap-4 animate-fade-in">
@@ -204,7 +202,7 @@ export default function OrdersPage() {
                         {(item.product_image || item.product?.featured_image) ? (
                           <Image
                             src={item.product_image || item.product?.featured_image}
-                            alt={item.product_name || item.product?.name || 'Produit'}
+                            alt={item.product_name || item.product?.name || 'Product'}
                             fill className="object-cover"
                             unoptimized
                           />
@@ -220,7 +218,7 @@ export default function OrdersPage() {
                             {item.product_name || item.product?.name}
                           </h3>
                         </Link>
-                        <p className="text-sm text-muted-foreground">Quantité : {item.quantity}</p>
+                        <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                         <p className="text-sm font-semibold text-primary">
                           {fcfa(parseFloat(item.price || item.total || 0))}
                         </p>
@@ -229,12 +227,11 @@ export default function OrdersPage() {
                   ))}
                   {order.items?.length > 3 && (
                     <p className="text-sm text-muted-foreground">
-                      +{order.items.length - 3} article{order.items.length - 3 > 1 ? 's' : ''} supplémentaire{order.items.length - 3 > 1 ? 's' : ''}
+                      +{order.items.length - 3} more item{order.items.length - 3 > 1 ? 's' : ''}
                     </p>
                   )}
                 </div>
 
-                {/* Total + address */}
                 <div className="mt-4 pt-4 border-t flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                   <div>
                     {order.shipping_address && (
@@ -244,7 +241,7 @@ export default function OrdersPage() {
                     )}
                     {order.tracking_number && (
                       <p className="text-xs font-mono text-primary mt-1">
-                        Suivi : {order.tracking_number}
+                        Tracking: {order.tracking_number}
                       </p>
                     )}
                   </div>
@@ -261,5 +258,3 @@ export default function OrdersPage() {
     </div>
   )
 }
-
-
