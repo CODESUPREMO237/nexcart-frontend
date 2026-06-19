@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import { useToast } from '@/hooks/useToast'
+import useAuthStore from '@/store/authStore'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -17,12 +18,12 @@ const fcfa = (n) =>
 export default function CartPage() {
   const router = useRouter()
   const { toast } = useToast()
+  const { isAuthenticated, authReady, checkAuth } = useAuthStore()
   const [cart, setCart] = useState(null)
   const [loading, setLoading] = useState(true)
   const [updatingItem, setUpdatingItem] = useState(null)
-  const [mounted, setMounted] = useState(false)
 
-  useEffect(() => { setMounted(true) }, [])
+  useEffect(() => { checkAuth() }, [checkAuth])
 
   const loadCart = useCallback(async () => {
     try {
@@ -37,11 +38,10 @@ export default function CartPage() {
   }, [router, toast])
 
   useEffect(() => {
-    if (!mounted) return
-    const token = localStorage.getItem('access_token')
-    if (!token) { router.push('/login?redirect=/cart'); return }
+    if (!authReady) return
+    if (!isAuthenticated) { router.push('/login?redirect=/cart'); return }
     loadCart()
-  }, [mounted, router, loadCart])
+  }, [authReady, isAuthenticated, router, loadCart])
 
   const updateQuantity = async (itemId, newQuantity) => {
     if (newQuantity < 1) return
