@@ -30,7 +30,11 @@ function LoginForm() {
     const result = await login(formData.email, formData.password)
     
     if (result.success) {
-      const returnUrl = getReturnUrl(searchParams)
+      let returnUrl = getReturnUrl(searchParams)
+      // Redirect admins to admin dashboard if no specific redirect was requested
+      if (result.user?.role === 'admin' && returnUrl === ROUTES.HOME) {
+        returnUrl = '/admin/products'
+      }
       router.push(returnUrl)
     }
   }
@@ -44,9 +48,10 @@ function LoginForm() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-bold">Welcome Back</h1>
-        <p className="text-muted-foreground">
+      <div className="space-y-1.5">
+        <span className="font-mono text-xs uppercase tracking-[0.15em] text-accent">Account</span>
+        <h1 className="font-display font-bold text-3xl text-foreground">Welcome back</h1>
+        <p className="text-sm text-muted-foreground">
           Login to your account to continue shopping
         </p>
       </div>
@@ -77,7 +82,7 @@ function LoginForm() {
             <Label htmlFor="password">Password</Label>
             <Link
               href="/forgot-password"
-              className="text-sm text-primary hover:underline"
+              className="text-xs text-accent hover:underline"
             >
               Forgot password?
             </Link>
@@ -106,7 +111,7 @@ function LoginForm() {
           </div>
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button type="submit" className="w-full btn-press" disabled={isLoading}>
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -120,10 +125,10 @@ function LoginForm() {
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
+          <span className="w-full border-t border-border" />
         </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
+        <div className="relative flex justify-center text-xs">
+          <span className="bg-background px-2 font-mono uppercase tracking-[0.1em] text-muted-foreground">
             Or continue with
           </span>
         </div>
@@ -132,6 +137,7 @@ function LoginForm() {
       <div className="grid grid-cols-3 gap-3">
         <Button
           variant="outline"
+          className="btn-press"
           onClick={loginWithGoogle}
           disabled={isLoading}
         >
@@ -156,6 +162,7 @@ function LoginForm() {
         </Button>
         <Button
           variant="outline"
+          className="btn-press"
           onClick={loginWithDiscord}
           disabled={isLoading}
         >
@@ -165,6 +172,7 @@ function LoginForm() {
         </Button>
         <Button
           variant="outline"
+          className="btn-press"
           onClick={loginWithMicrosoft}
           disabled={isLoading}
         >
@@ -179,7 +187,7 @@ function LoginForm() {
 
       <p className="text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{' '}
-        <Link href={ROUTES.REGISTER} className="text-primary hover:underline font-medium">
+        <Link href={ROUTES.REGISTER} className="text-accent hover:underline font-medium">
           Sign up
         </Link>
       </p>
@@ -191,9 +199,10 @@ export default function LoginPage() {
   return (
     <Suspense fallback={
       <div className="space-y-6">
-        <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold">Welcome Back</h1>
-          <p className="text-muted-foreground">Loading...</p>
+        <div className="space-y-1.5">
+          <span className="font-mono text-xs uppercase tracking-[0.15em] text-accent">Account</span>
+          <h1 className="font-display font-bold text-3xl text-foreground">Welcome back</h1>
+          <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
       </div>
     }>
@@ -201,4 +210,3 @@ export default function LoginPage() {
     </Suspense>
   )
 }
-

@@ -1,66 +1,113 @@
-import { Truck, Package, Plane } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Truck, Package, Plane, ArrowRight } from 'lucide-react'
+
+const tiers = [
+  {
+    icon: Truck,
+    name: 'Standard',
+    price: 'FREE',
+    eyebrow: '01 — Default',
+    time: '5–7 business days',
+    note: 'On orders over 50 FCFA',
+  },
+  {
+    icon: Package,
+    name: 'Express',
+    price: '500 FCFA',
+    eyebrow: '02 — Faster',
+    time: '2–3 business days',
+    note: 'Tracked door-to-door',
+  },
+  {
+    icon: Plane,
+    name: 'Overnight',
+    price: '1,000 FCFA',
+    eyebrow: '03 — Fastest',
+    time: '1 business day',
+    note: 'Order before 2pm to qualify',
+  },
+]
 
 export default function ShippingPage() {
   return (
-    <div className="container mx-auto px-4 py-16 max-w-4xl">
-      <h1 className="text-5xl font-bold mb-4">Shipping Information</h1>
-      <p className="text-xl text-muted-foreground mb-12">
-        Fast, reliable shipping to your door
-      </p>
-
-      <div className="grid md:grid-cols-3 gap-6 mb-12">
-        <Card>
-          <CardHeader>
-            <Truck className="h-12 w-12 text-primary mb-2" />
-            <CardTitle>Standard</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold mb-2">FREE</p>
-            <p className="text-sm text-muted-foreground">5-7 business days</p>
-            <p className="text-xs mt-2">On orders over 50 FCFA</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <Package className="h-12 w-12 text-primary mb-2" />
-            <CardTitle>Express</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold mb-2">15 FCFA</p>
-            <p className="text-sm text-muted-foreground">2-3 business days</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <Plane className="h-12 w-12 text-primary mb-2" />
-            <CardTitle>Overnight</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold mb-2">30 FCFA</p>
-            <p className="text-sm text-muted-foreground">1 business day</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="prose max-w-none">
-        <h2>Shipping Policy</h2>
-        <p>
-          We ship to all 50 states and internationally. Orders are processed within 1-2 business days.
+    <div className="bg-background">
+      <div className="container mx-auto px-4 max-w-5xl py-16 md:py-24">
+        <p className="text-sm font-medium tracking-[0.2em] uppercase text-accent mb-4">
+          Shipping
+        </p>
+        <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4 max-w-2xl">
+          Fast, reliable shipping to your door
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-xl mb-16">
+          Pick the speed that fits you. Every tier ships tracked, every order
+          leaves our warehouse within 1–2 business days.
         </p>
 
-        <h2>International Shipping</h2>
-        <p>
-          International shipping is available with delivery times varying by location (7-21 business days).
-          Customs fees may apply and are the responsibility of the customer.
-        </p>
+        <div className="grid md:grid-cols-3 border border-border rounded-xl overflow-hidden mb-20">
+          {tiers.map(({ icon: Icon, name, price, eyebrow, time, note }, i) => (
+            <div
+              key={name}
+              className={`p-8 flex flex-col gap-6 ${
+                i !== tiers.length - 1 ? 'md:border-r border-border' : ''
+              } ${i !== 0 ? 'border-t md:border-t-0 border-border' : ''}`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium tracking-[0.15em] uppercase text-muted-foreground">
+                  {eyebrow}
+                </span>
+                <Icon className="h-5 w-5 text-accent" strokeWidth={1.75} />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold mb-1">{name}</h2>
+                <p className="text-3xl font-bold tracking-tight">{price}</p>
+              </div>
+              <div className="mt-auto pt-4 border-t border-border">
+                <p className="text-sm font-medium">{time}</p>
+                <p className="text-sm text-muted-foreground mt-1">{note}</p>
+              </div>
+            </div>
+          ))}
+        </div>
 
-        <h2>Order Tracking</h2>
-        <p>
-          Once your order ships, you&apos;ll receive a tracking number via email to monitor your delivery.
-        </p>
+        <div className="grid md:grid-cols-3 gap-12">
+          <div>
+            <h2 className="text-sm font-semibold tracking-[0.15em] uppercase text-muted-foreground mb-3">
+              Shipping policy
+            </h2>
+            <p className="text-base leading-relaxed">
+              We ship to all 50 states and internationally. Orders are
+              processed within 1–2 business days.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-sm font-semibold tracking-[0.15em] uppercase text-muted-foreground mb-3">
+              International shipping
+            </h2>
+            <p className="text-base leading-relaxed">
+              Available with delivery times varying by location (7–21
+              business days). Customs fees may apply and are the
+              responsibility of the customer.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-sm font-semibold tracking-[0.15em] uppercase text-muted-foreground mb-3">
+              Order tracking
+            </h2>
+            <p className="text-base leading-relaxed">
+              Once your order ships, you&apos;ll receive a tracking number
+              via email to monitor your delivery.
+            </p>
+          </div>
+        </div>
+
+        <a
+          href="/contact"
+          className="inline-flex items-center gap-2 mt-16 text-sm font-medium text-accent hover:gap-3 transition-all"
+        >
+          Questions about your shipment? Contact support
+          <ArrowRight className="h-4 w-4" />
+        </a>
       </div>
     </div>
   )

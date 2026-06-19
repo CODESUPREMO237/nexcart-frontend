@@ -7,6 +7,20 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useState } from 'react'
 
+const SHOP_LINKS = [
+  { href: '/products', label: 'All Products' },
+  { href: '/categories', label: 'Categories' },
+  { href: '/orders', label: 'My Orders' },
+  { href: '/wishlist', label: 'My Wishlist' },
+]
+
+const SERVICE_LINKS = [
+  { href: '/about', label: 'About Us' },
+  { href: '/contact', label: 'Contact Us' },
+  { href: '/shipping', label: 'Shipping' },
+  { href: '/returns', label: 'Returns & Exchanges' },
+]
+
 export default function Footer() {
   const [email, setEmail] = useState('')
 
@@ -16,70 +30,52 @@ export default function Footer() {
   }
 
   return (
-    <footer className="bg-gradient-to-b from-background to-muted/30 border-t mt-20">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Brand Section */}
-          <div className="space-y-4 animate-fade-in-left">
-            <Link href="/" className="flex items-center space-x-2 group">
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary/60 group-hover:scale-110 transition-transform">
-                <ShoppingCart className="h-6 w-6 text-primary-foreground" />
+    <footer className="bg-background border-t border-border mt-16">
+      <div className="container mx-auto px-4 max-w-6xl py-14">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+
+          {/* Brand */}
+          <div className="space-y-5">
+            <Link href="/" className="flex items-center gap-2 group w-fit">
+              <div className="h-8 w-8 rounded-md bg-foreground flex items-center justify-center group-hover:bg-foreground/90 transition-colors">
+                <ShoppingCart className="h-4 w-4 text-background" />
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                NexCart
-              </span>
+              <span className="font-display font-bold text-lg text-foreground tracking-tight">NexCart</span>
             </Link>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Cameroon&apos;s premier AI-powered shopping destination. Discover products personalised just for you.
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-[200px]">
+              Cameroon's marketplace built for how people actually shop — local, mobile, simple.
             </p>
-            <div className="flex space-x-2">
-              <Button size="icon" variant="outline" className="h-9 w-9 btn-press">
-                <Facebook className="h-4 w-4" />
-              </Button>
-              <Button size="icon" variant="outline" className="h-9 w-9 btn-press">
-                <Twitter className="h-4 w-4" />
-              </Button>
-              <Button size="icon" variant="outline" className="h-9 w-9 btn-press">
-                <Instagram className="h-4 w-4" />
-              </Button>
-              <Button size="icon" variant="outline" className="h-9 w-9 btn-press">
-                <Github className="h-4 w-4" />
-              </Button>
+            <div className="flex gap-2">
+              {[Facebook, Twitter, Instagram, Github].map((Icon, i) => (
+                <Button key={i} size="icon" variant="outline" className="h-8 w-8 rounded-md btn-press">
+                  <Icon className="h-3.5 w-3.5" />
+                </Button>
+              ))}
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="animate-fade-in stagger-2">
-            <h3 className="font-semibold text-lg mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-              {[
-                { href: '/products', label: 'All Products' },
-                { href: '/categories', label: 'Categories' },
-                { href: '/orders', label: 'My Orders' },
-                { href: '/wishlist', label: 'My Wishlist' },
-              ].map((link) => (
-                <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors hover:translate-x-1 inline-block transition-transform">
-                    {link.label}
+          {/* Shop */}
+          <div>
+            <p className="font-mono text-xs uppercase tracking-[0.15em] text-foreground mb-4">Shop</p>
+            <ul className="space-y-2.5">
+              {SHOP_LINKS.map(({ href, label }) => (
+                <li key={href}>
+                  <Link href={href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    {label}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Customer Service */}
-          <div className="animate-fade-in stagger-3">
-            <h3 className="font-semibold text-lg mb-4">Customer Service</h3>
-            <ul className="space-y-2">
-              {[
-                { href: '/about', label: 'About Us' },
-                { href: '/contact', label: 'Contact Us' },
-                { href: '/shipping', label: 'Shipping' },
-                { href: '/returns', label: 'Returns & Exchanges' },
-              ].map((link) => (
-                <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors hover:translate-x-1 inline-block transition-transform">
-                    {link.label}
+          {/* Support */}
+          <div>
+            <p className="font-mono text-xs uppercase tracking-[0.15em] text-foreground mb-4">Support</p>
+            <ul className="space-y-2.5">
+              {SERVICE_LINKS.map(({ href, label }) => (
+                <li key={href}>
+                  <Link href={href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    {label}
                   </Link>
                 </li>
               ))}
@@ -87,55 +83,46 @@ export default function Footer() {
           </div>
 
           {/* Newsletter + Contact */}
-          <div className="animate-fade-in-right">
-            <h3 className="font-semibold text-lg mb-4">Newsletter</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Subscribe to receive our special offers and updates.
+          <div>
+            <p className="font-mono text-xs uppercase tracking-[0.15em] text-foreground mb-4">Newsletter</p>
+            <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+              Get offers and updates delivered to your inbox.
             </p>
-            <form onSubmit={handleNewsletterSubmit} className="space-y-2">
+            <form onSubmit={handleNewsletterSubmit} className="space-y-2 mb-6">
               <Input
                 type="email"
-                placeholder="Your email address"
+                placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="h-9 text-sm"
               />
-              <Button type="submit" className="w-full btn-press">
-                Subscribe
-              </Button>
+              <Button type="submit" size="sm" className="w-full btn-press">Subscribe</Button>
             </form>
-            <div className="mt-4 space-y-2">
-              <div className="flex items-start space-x-2 text-sm text-muted-foreground">
-                <Mail className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span>support@nexcart.cm</span>
-              </div>
-              <div className="flex items-start space-x-2 text-sm text-muted-foreground">
-                <Phone className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span>+237 652 314 994</span>
-              </div>
-              <div className="flex items-start space-x-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span>Tiko, South West, Cameroon</span>
-              </div>
-            </div>
+            <ul className="space-y-2.5">
+              {[
+                { Icon: Mail, text: 'support@nexcart.cm' },
+                { Icon: Phone, text: '+237 652 314 994' },
+                { Icon: MapPin, text: 'Tiko, South West, Cameroon' },
+              ].map(({ Icon, text }) => (
+                <li key={text} className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <Icon className="h-3.5 w-3.5 mt-0.5 shrink-0 text-accent" />
+                  <span>{text}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} NexCart. All rights reserved. 🇨🇲 Tiko, Cameroon
-            </p>
-            <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
-              <Link href="/privacy" className="hover:text-primary transition-colors">
-                Privacy Policy
-              </Link>
-              <span>•</span>
-              <Link href="/terms" className="hover:text-primary transition-colors">
-                Terms of Use
-              </Link>
-            </div>
+        {/* Bottom bar */}
+        <div className="mt-12 pt-6 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-xs text-muted-foreground font-mono">
+            © {new Date().getFullYear()} NexCart · Tiko, Cameroon 🇨🇲
+          </p>
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+            <span className="text-border">·</span>
+            <Link href="/terms" className="hover:text-foreground transition-colors">Terms of Use</Link>
           </div>
         </div>
       </div>

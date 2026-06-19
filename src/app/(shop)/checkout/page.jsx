@@ -64,19 +64,17 @@ function MtnLogo({ active }) {
   )
 }
 
-// ── Orange Logo ───────────────────────────────────────────────
+// ── Orange Money Logo (official lockup, served from /public) ───
 function OrangeLogo({ active }) {
   return (
-    <div className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all ${
-      active ? 'bg-orange-100' : 'bg-gray-100'
+    <div className={`flex items-center justify-center px-3 py-2 rounded-xl transition-all ${
+      active ? 'bg-orange-50' : 'bg-gray-100'
     }`}>
-      <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center shadow-sm">
-        <div className="w-5 h-5 rounded-full bg-white opacity-90" />
-      </div>
-      <div className="text-left">
-        <div style={{ fontFamily: 'Arial, sans-serif', fontWeight: 700, fontSize: '15px', color: active ? '#e65c00' : '#333', lineHeight: 1.1 }}>Orange</div>
-        <div style={{ fontSize: '10px', color: active ? '#e65c00' : '#888', fontWeight: 500 }}>Money</div>
-      </div>
+      <img
+        src="/Orange_Money-Logo.wine.svg"
+        alt="Orange Money"
+        className="h-9 w-auto object-contain"
+      />
     </div>
   )
 }

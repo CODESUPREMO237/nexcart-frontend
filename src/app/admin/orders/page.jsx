@@ -1,4 +1,4 @@
-﻿// Location: app\admin\orders\page.jsx
+// Location: app\admin\orders\page.jsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -6,10 +6,8 @@ import { useRouter } from 'next/navigation'
 import useAuthStore from '@/store/authStore'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { 
+import {
   Table,
   TableBody,
   TableCell,
@@ -24,7 +22,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { 
+import {
   Search,
   Eye,
   ChevronLeft,
@@ -38,10 +36,27 @@ import {
 import { formatPrice } from '@/lib/utils'
 import Image from 'next/image'
 
+const STATUS_STYLES = {
+  pending: 'border-accent/30 bg-accent/5 text-accent',
+  processing: 'border-border bg-muted text-foreground',
+  shipped: 'border-border bg-muted text-foreground',
+  delivered: 'border-[#2F5233]/30 bg-[#2F5233]/5 text-[#2F5233]',
+  cancelled: 'border-destructive/30 bg-destructive/5 text-destructive',
+}
+
+function StatusTag({ status, icon: Icon, label }) {
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[11px] font-mono uppercase tracking-[0.06em] ${STATUS_STYLES[status] || STATUS_STYLES.pending}`}>
+      <Icon className="w-3 h-3" />
+      {label}
+    </span>
+  )
+}
+
 export default function AdminOrdersPage() {
   const router = useRouter()
   const { user, isAuthenticated } = useAuthStore()
-  
+
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -66,8 +81,8 @@ export default function AdminOrdersPage() {
   const fetchOrders = async () => {
     try {
       setLoading(true)
-     const data = await api.getOrders()
-    setOrders(data.results || data)
+      const data = await api.getOrders()
+      setOrders(data.results || data)
     } catch (error) {
       console.error('Error fetching orders:', error)
     } finally {
@@ -100,48 +115,23 @@ export default function AdminOrdersPage() {
 
   const getStatusConfig = (status) => {
     const configs = {
-      pending: { 
-        icon: ShoppingCart, 
-        variant: 'warning', 
-        label: 'Pending',
-        color: 'text-yellow-600'
-      },
-      processing: { 
-        icon: Package, 
-        variant: 'default', 
-        label: 'Processing',
-        color: 'text-blue-600'
-      },
-      shipped: { 
-        icon: Truck, 
-        variant: 'info', 
-        label: 'Shipped',
-        color: 'text-purple-600'
-      },
-      delivered: { 
-        icon: CheckCircle, 
-        variant: 'success', 
-        label: 'Delivered',
-        color: 'text-green-600'
-      },
-      cancelled: { 
-        icon: XCircle, 
-        variant: 'destructive', 
-        label: 'Cancelled',
-        color: 'text-red-600'
-      }
+      pending: { icon: ShoppingCart, label: 'Pending' },
+      processing: { icon: Package, label: 'Processing' },
+      shipped: { icon: Truck, label: 'Shipped' },
+      delivered: { icon: CheckCircle, label: 'Delivered' },
+      cancelled: { icon: XCircle, label: 'Cancelled' }
     }
     return configs[status] || configs.pending
   }
 
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = 
+    const matchesSearch =
       order.id.toString().includes(searchQuery) ||
       order.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.user?.email?.toLowerCase().includes(searchQuery.toLowerCase())
-    
+
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter
-    
+
     return matchesSearch && matchesStatus
   })
 
@@ -156,137 +146,133 @@ export default function AdminOrdersPage() {
     <div className="space-y-6 p-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Order Management</h1>
-        <p className="text-gray-600 mt-1">
+        <p className="text-[11px] font-mono uppercase tracking-[0.15em] text-accent mb-1">Operations</p>
+        <h1 className="text-3xl font-display font-bold text-foreground">Order Management</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
           Manage your {orders.length} orders
         </p>
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Search by order ID, customer name, or email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="processing">Processing</SelectItem>
-                <SelectItem value="shipped">Shipped</SelectItem>
-                <SelectItem value="delivered">Delivered</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
+      <div className="border border-border rounded-md bg-card p-4">
+        <div className="flex gap-4 flex-wrap">
+          <div className="relative flex-1 min-w-[220px]">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search by order ID, customer name, or email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 rounded-md"
+            />
           </div>
-        </CardContent>
-      </Card>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-48 rounded-md">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="processing">Processing</SelectItem>
+              <SelectItem value="shipped">Shipped</SelectItem>
+              <SelectItem value="delivered">Delivered</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
       {/* Orders Table */}
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
+      <div className="border border-border rounded-md bg-card overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Order ID</TableHead>
+              <TableHead>Customer</TableHead>
+              <TableHead>Items</TableHead>
+              <TableHead>Total</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
               <TableRow>
-                <TableHead>Order ID</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Items</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground font-mono text-sm">
+                  Loading orders…
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
-                    Loading orders...
-                  </TableCell>
-                </TableRow>
-              ) : paginatedOrders.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
-                    <ShoppingCart className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                    <p className="text-gray-600">No orders found</p>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                paginatedOrders.map((order) => {
-                  const statusConfig = getStatusConfig(order.status)
-                  const StatusIcon = statusConfig.icon
-                  
-                  return (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-semibold">
-                        #{order.id}
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{order.user?.name || 'Guest'}</p>
-                          <p className="text-sm text-gray-600">{order.user?.email}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {order.items?.length || 0} items
-                      </TableCell>
-                      <TableCell className="font-semibold">
-                        {formatPrice(order.total_amount)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={statusConfig.variant} className="gap-1">
-                          <StatusIcon className="w-3 h-3" />
-                          {statusConfig.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-gray-600">
-                        {new Date(order.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleViewOrder(order.id)}
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          View
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            ) : paginatedOrders.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-8">
+                  <ShoppingCart className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-muted-foreground text-sm">No orders found</p>
+                </TableCell>
+              </TableRow>
+            ) : (
+              paginatedOrders.map((order) => {
+                const statusConfig = getStatusConfig(order.status)
+
+                return (
+                  <TableRow key={order.id}>
+                    <TableCell className="font-mono font-semibold text-foreground">
+                      #{order.id}
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium text-foreground text-sm">{order.user?.name || 'Guest'}</p>
+                        <p className="text-xs text-muted-foreground">{order.user?.email}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-foreground">
+                      {order.items?.length || 0} items
+                    </TableCell>
+                    <TableCell className="font-mono font-semibold text-foreground">
+                      {formatPrice(order.total_amount)}
+                    </TableCell>
+                    <TableCell>
+                      <StatusTag status={order.status} icon={statusConfig.icon} label={statusConfig.label} />
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {new Date(order.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-md"
+                        onClick={() => handleViewOrder(order.id)}
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        View
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                )
+              })
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-2">
           <Button
             variant="outline"
+            className="rounded-md"
             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
             disabled={currentPage === 1}
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-muted-foreground font-mono">
             Page {currentPage} of {totalPages}
           </span>
           <Button
             variant="outline"
+            className="rounded-md"
             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
           >
@@ -297,20 +283,20 @@ export default function AdminOrdersPage() {
 
       {/* Order Details Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto rounded-md">
           <DialogHeader>
-            <DialogTitle>Order Details #{selectedOrder?.id}</DialogTitle>
+            <DialogTitle className="font-display">Order Details #{selectedOrder?.id}</DialogTitle>
           </DialogHeader>
           {selectedOrder && (
             <div className="space-y-6">
               {/* Status Update */}
               <div className="flex items-center gap-4">
-                <label className="font-medium">Update Status:</label>
-                <Select 
-                  value={selectedOrder.status} 
+                <label className="font-medium text-sm text-foreground">Update Status:</label>
+                <Select
+                  value={selectedOrder.status}
                   onValueChange={(status) => handleUpdateStatus(selectedOrder.id, status)}
                 >
-                  <SelectTrigger className="w-48">
+                  <SelectTrigger className="w-48 rounded-md">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -325,19 +311,19 @@ export default function AdminOrdersPage() {
 
               {/* Customer Info */}
               <div>
-                <h3 className="font-semibold text-lg mb-3">Customer Information</h3>
-                <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                  <p><span className="font-medium">Name:</span> {selectedOrder.user?.name}</p>
-                  <p><span className="font-medium">Email:</span> {selectedOrder.user?.email}</p>
-                  <p><span className="font-medium">Phone:</span> {selectedOrder.shipping_address?.phone || 'N/A'}</p>
+                <h3 className="font-display font-semibold text-foreground mb-3">Customer Information</h3>
+                <div className="border border-border rounded-md bg-muted/30 p-4 space-y-2 text-sm">
+                  <p><span className="font-medium text-foreground">Name:</span> <span className="text-muted-foreground">{selectedOrder.user?.name}</span></p>
+                  <p><span className="font-medium text-foreground">Email:</span> <span className="text-muted-foreground">{selectedOrder.user?.email}</span></p>
+                  <p><span className="font-medium text-foreground">Phone:</span> <span className="text-muted-foreground">{selectedOrder.shipping_address?.phone || 'N/A'}</span></p>
                 </div>
               </div>
 
               {/* Shipping Address */}
               {selectedOrder.shipping_address && (
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Shipping Address</h3>
-                  <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="font-display font-semibold text-foreground mb-3">Shipping Address</h3>
+                  <div className="border border-border rounded-md bg-muted/30 p-4 text-sm text-muted-foreground">
                     <p>{selectedOrder.shipping_address.street}</p>
                     <p>{selectedOrder.shipping_address.city}, {selectedOrder.shipping_address.state}</p>
                     <p>{selectedOrder.shipping_address.country} - {selectedOrder.shipping_address.postal_code}</p>
@@ -347,32 +333,32 @@ export default function AdminOrdersPage() {
 
               {/* Order Items */}
               <div>
-                <h3 className="font-semibold text-lg mb-3">Order Items</h3>
+                <h3 className="font-display font-semibold text-foreground mb-3">Order Items</h3>
                 <div className="space-y-3">
                   {selectedOrder.items?.map((item, index) => (
-                    <div key={index} className="flex items-center gap-4 bg-gray-50 rounded-lg p-4">
-                      <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+                    <div key={index} className="flex items-center gap-4 border border-border rounded-md p-3">
+                      <div className="w-16 h-16 bg-muted rounded-md overflow-hidden flex-shrink-0 relative">
                         {item.product?.image ? (
-                                                    <Image
+                          <Image
                             src={item.product.image}
                             alt={item.product.name}
                             fill
-                            className="w-full h-full object-cover"
+                            className="object-cover"
                             unoptimized
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <Package className="w-6 h-6 text-gray-400" />
+                            <Package className="w-6 h-6 text-muted-foreground" />
                           </div>
                         )}
                       </div>
                       <div className="flex-1">
-                        <p className="font-semibold">{item.product?.name}</p>
-                        <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                        <p className="font-medium text-foreground text-sm">{item.product?.name}</p>
+                        <p className="text-xs text-muted-foreground">Quantity: {item.quantity}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold">{formatPrice(item.price * item.quantity)}</p>
-                        <p className="text-sm text-gray-600">{formatPrice(item.price)} each</p>
+                        <p className="font-mono font-semibold text-foreground text-sm">{formatPrice(item.price * item.quantity)}</p>
+                        <p className="text-xs text-muted-foreground">{formatPrice(item.price)} each</p>
                       </div>
                     </div>
                   ))}
@@ -380,10 +366,10 @@ export default function AdminOrdersPage() {
               </div>
 
               {/* Order Summary */}
-              <div className="border-t pt-4">
-                <div className="flex justify-between text-lg font-bold">
+              <div className="border-t border-border pt-4">
+                <div className="flex justify-between text-lg font-display font-bold text-foreground">
                   <span>Total Amount</span>
-                  <span className="text-blue-600">{formatPrice(selectedOrder.total_amount)}</span>
+                  <span className="text-accent font-mono">{formatPrice(selectedOrder.total_amount)}</span>
                 </div>
               </div>
             </div>

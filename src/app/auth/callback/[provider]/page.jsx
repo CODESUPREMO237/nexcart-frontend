@@ -90,7 +90,10 @@ export default function OAuthCallback() {
         
         // Redirect to home or return URL
         setTimeout(() => {
-          const returnUrl = searchParams.get('returnUrl') || '/'
+          let returnUrl = searchParams.get('returnUrl') || '/'
+          if (data.user?.role === 'admin' && returnUrl === '/') {
+            returnUrl = '/admin/products'
+          }
           router.push(returnUrl)
         }, 1000)
 

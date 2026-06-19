@@ -53,13 +53,14 @@ class APIClient {
               return this.client(originalRequest);
             }
           } catch (refreshError) {
-            // Token refresh failed, clear tokens
+            // Token refresh failed (expired/invalid refresh token) - clear tokens
             this.clearTokens();
-            
-            // Don't redirect to login, just retry the request without auth
-            // This allows public endpoints to work even after token expiry
-            delete originalRequest.headers.Authorization;
-            return this.client(originalRequest);
+
+            // Surface the original 401 instead of silently retrying without auth.
+            // Retrying without auth just produces a second, confusing 401 for any
+            // protected endpoint (e.g. contact_seller) and masks the real cause
+            // (expired session) from the calling code's error handling.
+            return Promise.reject(error);
           }
         }
 
@@ -70,30 +71,30 @@ class APIClient {
 
   // Token management
   getAccessToken() {
-    return typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+    return typeof window !== 'undefined' ? sessionStorage.getItem('access_token') : null;
   }
 
   getRefreshToken() {
-    return typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null;
+    return typeof window !== 'undefined' ? sessionStorage.getItem('refresh_token') : null;
   }
 
   setAccessToken(token) {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('access_token', token);
+      sessionStorage.setItem('access_token', token);
     }
   }
 
   setTokens(access, refresh) {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('access_token', access);
-      localStorage.setItem('refresh_token', refresh);
+      sessionStorage.setItem('access_token', access);
+      sessionStorage.setItem('refresh_token', refresh);
     }
   }
 
   clearTokens() {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
+      sessionStorage.removeItem('access_token');
+      sessionStorage.removeItem('refresh_token');
     }
   }
 
@@ -141,7 +142,10 @@ class APIClient {
 
   // User
   async getCurrentUser() {
-    const response = await this.client.get('/users/auth/profile/');
+    // Add timestamp to bust browser cache — stale role data causes UI issues
+    const response = await this.client.get('/users/auth/profile/', {
+      params: { _t: Date.now() }
+    });
     return response.data;
   }
 
@@ -289,7 +293,7 @@ class APIClient {
   // Reviews
   async addReview(productId, rating, comment, title) {
     const response = await this.client.post('/reviews/', {
-      product_id: productId,
+      product: productId,
       rating,
       comment,
       title,
@@ -313,6 +317,173 @@ class APIClient {
     } catch (error) {
       console.error('Activity tracking error:', error);
     }
+  }
+
+  // ============ NEW FEATURES ============
+
+  // Vendors
+  async registerVendor(data) {
+    const response = await this.client.post('/vendor/register/', data);
+    return response.data;
+  }
+
+  async getVendorDashboard() {
+    const response = await this.client.get('/vendor/dashboard/');
+    return response.data;
+  }
+
+  async getVendorProducts() {
+    const response = await this.client.get('/vendor/products/');
+    return response.data;
+  }
+
+  async getVendorOrders() {
+    const response = await this.client.get('/vendor/orders/');
+    return response.data;
+  }
+
+  async getVendors() {
+    const response = await this.client.get('/vendors/');
+    return response.data;
+  }
+
+  async getVendor(slug) {
+    const response = await this.client.get(`/vendors/${slug}/`);
+    return response.data;
+  }
+
+  async getVendorPublicProducts(slug) {
+    const response = await this.client.get(`/vendors/${slug}/products/`);
+    return response.data;
+  }
+
+  // Chat
+  async getConversations() {
+    const response = await this.client.get('/chat/conversations/');
+    return response.data;
+  }
+
+  async getMessages(conversationId) {
+    const response = await this.client.get(`/chat/conversations/${conversationId}/messages/`);
+    return response.data;
+  }
+
+  async sendChatMessage(data) {
+    const response = await this.client.post('/chat/send/', data);
+    return response.data;
+  }
+
+  async getUnreadCount() {
+    const response = await this.client.get('/chat/unread/');
+    return response.data;
+  }
+
+  // Admin private threads (admin <-> single buyer/seller)
+  async getAdminThreads() {
+    const response = await this.client.get('/chat/admin-threads/');
+    return response.data;
+  }
+
+  /** For buyers/sellers: fetch their own admin threads (messages from the admin team) */
+  async getMyAdminThreads() {
+    const response = await this.client.get('/chat/admin-threads/');
+    return response.data;
+  }
+
+  async getAdminThreadMessages(threadId) {
+    const response = await this.client.get(`/chat/admin-threads/${threadId}/messages/`);
+    return response.data;
+  }
+
+  async startAdminThread(userId, conversationId) {
+    const response = await this.client.post('/chat/admin-threads/start/', {
+      user_id: userId,
+      conversation_id: conversationId,
+    });
+    return response.data;
+  }
+
+  async sendAdminThreadMessage(threadId, content) {
+    const response = await this.client.post('/chat/admin-threads/send/', {
+      thread_id: threadId,
+      content,
+    });
+    return response.data;
+  }
+
+  // Delivery
+  async getDeliveryZones() {
+    const response = await this.client.get('/delivery/zones/');
+    return response.data;
+  }
+
+  async estimateDelivery(data) {
+    const response = await this.client.post('/delivery/estimate/', data);
+    return response.data;
+  }
+
+  // Coupons
+  async validateCoupon(code, orderTotal) {
+    const response = await this.client.post('/coupons/validate/', {
+      code,
+      order_total: orderTotal,
+    });
+    return response.data;
+  }
+
+  // Analytics (Admin)
+  async getDashboardStats() {
+    const response = await this.client.get('/analytics/dashboard/');
+    return response.data;
+  }
+
+  async getSalesChart(days = 30) {
+    const response = await this.client.get(`/analytics/sales-chart/?days=${days}`);
+    return response.data;
+  }
+
+  async getTopProducts(limit = 10) {
+    const response = await this.client.get(`/analytics/top-products/?limit=${limit}`);
+    return response.data;
+  }
+
+  async getRecentOrders(limit = 20) {
+    const response = await this.client.get(`/analytics/recent-orders/?limit=${limit}`);
+    return response.data;
+  }
+
+  // Price Tracking
+  async getPriceHistory(productId) {
+    const response = await this.client.get(`/products/${productId}/price-history/`);
+    return response.data;
+  }
+
+  async createPriceAlert(productId, targetPrice) {
+    const response = await this.client.post('/price-alerts/create/', {
+      product_id: productId,
+      target_price: targetPrice,
+    });
+    return response.data;
+  }
+
+  async getMyPriceAlerts() {
+    const response = await this.client.get('/price-alerts/');
+    return response.data;
+  }
+
+  async deletePriceAlert(alertId) {
+    const response = await this.client.delete(`/price-alerts/${alertId}/`);
+    return response.data;
+  }
+
+  // Visual Search
+  async visualSearch(imageFile) {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+    const response = await this.client.post('/products/visual-search/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
   }
 
   // Generic HTTP methods for flexibility
@@ -344,3 +515,4 @@ class APIClient {
 
 export const api = new APIClient();
 export default api;
+

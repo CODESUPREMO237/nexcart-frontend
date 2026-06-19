@@ -34,29 +34,23 @@ function isTokenExpired(token) {
 }
 
 /**
- * Validate and clean up expired tokens
+ * Validate and clean up expired tokens.
+ * Only clears tokens when the refresh token is expired (session is dead).
+ * If only the access token is expired, the API interceptor will refresh it
+ * automatically — so we must NOT remove it here.
  */
 export function validateAndCleanupTokens() {
   if (typeof window === 'undefined') return;
   
-  const accessToken = localStorage.getItem('access_token');
-  const refreshToken = localStorage.getItem('refresh_token');
+  const refreshToken = sessionStorage.getItem('refresh_token');
   
-  // Check if access token is expired
-  if (accessToken && isTokenExpired(accessToken)) {
-    console.log('Access token expired, removing...');
-    localStorage.removeItem('access_token');
-  }
-  
-  // Check if refresh token is expired
-  if (refreshToken && isTokenExpired(refreshToken)) {
-    console.log('Refresh token expired, removing...');
-    localStorage.removeItem('refresh_token');
-  }
-  
-  // If refresh token is expired, also remove access token
+  // Only clean up when the refresh token is expired — session is truly dead
   if (!refreshToken || isTokenExpired(refreshToken)) {
-    localStorage.removeItem('access_token');
+    console.log('Refresh token expired or missing, clearing auth session...');
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('refresh_token');
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('auth-storage');
   }
 }
 

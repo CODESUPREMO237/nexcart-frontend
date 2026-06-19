@@ -7,30 +7,41 @@ import useAuthStore from '@/store/authStore'
 
 export function useRequireAuth(redirectTo = '/login') {
   const router = useRouter()
-  const { isAuthenticated, checkAuth } = useAuthStore()
+  const { isAuthenticated, checkAuth, roleConfirmed } = useAuthStore()
   const [isLoading, setIsLoading] = useState(true)
   const [isAuthorized, setIsAuthorized] = useState(false)
 
   useEffect(() => {
     const verifyAuth = async () => {
-      // First, check auth status from localStorage
+      // Run checkAuth (skips if already roleConfirmed)
       await checkAuth()
-      
-      // Small delay to ensure state is updated
-      await new Promise(resolve => setTimeout(resolve, 100))
-      
-      // Get the current auth state
+
+      // Wait for roleConfirmed to become true (polls store state)
+      const waitForConfirmation = () => new Promise((resolve) => {
+        // Already confirmed
+        if (useAuthStore.getState().roleConfirmed) { resolve(); return }
+        // Subscribe to store changes
+        const unsub = useAuthStore.subscribe((state) => {
+          if (state.roleConfirmed || !state.isAuthenticated) {
+            unsub()
+            resolve()
+          }
+        })
+        // Timeout after 5s to avoid hanging
+        setTimeout(() => { unsub(); resolve() }, 5000)
+      })
+
+      await waitForConfirmation()
+
       const currentAuthState = useAuthStore.getState().isAuthenticated
-      
+
       if (!currentAuthState) {
-        // Not authenticated, redirect to login with return URL
         const returnUrl = window.location.pathname + window.location.search
         router.push(`${redirectTo}?returnUrl=${encodeURIComponent(returnUrl)}`)
       } else {
-        // Authenticated, allow access
         setIsAuthorized(true)
       }
-      
+
       setIsLoading(false)
     }
 

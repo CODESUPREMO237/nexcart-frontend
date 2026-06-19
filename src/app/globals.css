@@ -4,54 +4,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme {
-  --color-background: 0 0% 100%;
-  --color-foreground: 222.2 84% 4.9%;
-  --color-card: 0 0% 100%;
-  --color-card-foreground: 222.2 84% 4.9%;
-  --color-popover: 0 0% 100%;
-  --color-popover-foreground: 222.2 84% 4.9%;
-  --color-primary: 221.2 83.2% 53.3%;
-  --color-primary-foreground: 210 40% 98%;
-  --color-secondary: 210 40% 96.1%;
-  --color-secondary-foreground: 222.2 47.4% 11.2%;
-  --color-muted: 210 40% 96.1%;
-  --color-muted-foreground: 215.4 16.3% 46.9%;
-  --color-accent: 210 40% 96.1%;
-  --color-accent-foreground: 222.2 47.4% 11.2%;
-  --color-destructive: 0 84.2% 60.2%;
-  --color-destructive-foreground: 210 40% 98%;
-  --color-border: 214.3 31.8% 91.4%;
-  --color-input: 214.3 31.8% 91.4%;
-  --color-ring: 221.2 83.2% 53.3%;
-  --radius: 0.5rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  @theme {
-    --color-background: 222.2 84% 4.9%;
-    --color-foreground: 210 40% 98%;
-    --color-card: 222.2 84% 4.9%;
-    --color-card-foreground: 210 40% 98%;
-    --color-popover: 222.2 84% 4.9%;
-    --color-popover-foreground: 210 40% 98%;
-    --color-primary: 217.2 91.2% 59.8%;
-    --color-primary-foreground: 222.2 47.4% 11.2%;
-    --color-secondary: 217.2 32.6% 17.5%;
-    --color-secondary-foreground: 210 40% 98%;
-    --color-muted: 217.2 32.6% 17.5%;
-    --color-muted-foreground: 215 20.2% 65.1%;
-    --color-accent: 217.2 32.6% 17.5%;
-    --color-accent-foreground: 210 40% 98%;
-    --color-destructive: 0 62.8% 30.6%;
-    --color-destructive-foreground: 210 40% 98%;
-    --color-border: 217.2 32.6% 17.5%;
-    --color-input: 217.2 32.6% 17.5%;
-    --color-ring: 224.3 76.3% 48%;
-  }
+:root {
+  --nf-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --nf-display: 'IBM Plex Sans', 'Inter', ui-sans-serif, sans-serif;
+  --nf-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
 }
 
 @theme inline {
+  --font-sans: var(--nf-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--nf-display), var(--nf-sans), ui-sans-serif, sans-serif;
+  --font-mono: var(--nf-mono), ui-monospace, "SFMono-Regular", monospace;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -93,72 +55,82 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* ---- NexCart token system ----
+     ink     #14171C  primary text, primary buttons, dark sections
+     paper   #FAF8F4  warm off-white canvas (not stark white)
+     slate   #5B6472  secondary/muted text
+     copper  #B5651D  signature accent — used sparingly (links, focus rings, key CTAs)
+     line    #E3DFD6  hairline borders/dividers
+     Radius is tightened from the default 10px to 6px: structured and precise
+     rather than the soft, friendly-SaaS roundedness of the shadcn default. */
+  --radius: 0.375rem;
+  --background: #FAF8F4;
+  --foreground: #14171C;
+  --card: #FFFFFF;
+  --card-foreground: #14171C;
+  --popover: #FFFFFF;
+  --popover-foreground: #14171C;
+  --primary: #14171C;
+  --primary-foreground: #FAF8F4;
+  --secondary: #F0EDE6;
+  --secondary-foreground: #14171C;
+  --muted: #F0EDE6;
+  --muted-foreground: #5B6472;
+  --accent: #B5651D;
+  --accent-foreground: #FFFFFF;
+  --destructive: #C0392B;
+  --destructive-foreground: #FFFFFF;
+  --border: #E3DFD6;
+  --input: #E3DFD6;
+  --ring: #B5651D;
+  --chart-1: #B5651D;
+  --chart-2: #2F5233;
+  --chart-3: #5B6472;
+  --chart-4: #8F4E14;
+  --chart-5: #C9A86A;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #14171C;
+  --sidebar-primary: #14171C;
+  --sidebar-primary-foreground: #FAF8F4;
+  --sidebar-accent: #F0EDE6;
+  --sidebar-accent-foreground: #14171C;
+  --sidebar-border: #E3DFD6;
+  --sidebar-ring: #B5651D;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #14171C;
+  --foreground: #FAF8F4;
+  --card: #1B1F26;
+  --card-foreground: #FAF8F4;
+  --popover: #1B1F26;
+  --popover-foreground: #FAF8F4;
+  --primary: #FAF8F4;
+  --primary-foreground: #14171C;
+  --secondary: #232831;
+  --secondary-foreground: #FAF8F4;
+  --muted: #232831;
+  --muted-foreground: #9AA1AC;
+  --accent: #D88A3F;
+  --accent-foreground: #14171C;
+  --destructive: #E0584A;
+  --destructive-foreground: #14171C;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #D88A3F;
+  --chart-1: #D88A3F;
+  --chart-2: #5C8A66;
+  --chart-3: #9AA1AC;
+  --chart-4: #C9A86A;
+  --chart-5: #8F4E14;
+  --sidebar: #1B1F26;
+  --sidebar-foreground: #FAF8F4;
+  --sidebar-primary: #FAF8F4;
+  --sidebar-primary-foreground: #14171C;
+  --sidebar-accent: #232831;
+  --sidebar-accent-foreground: #FAF8F4;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #D88A3F;
 }
 
 @layer base {
@@ -264,4 +236,30 @@
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+}
+
+/* =============================================
+   HERO GRID BACKGROUND
+   Structural dot-grid — enterprise signature element
+   ============================================= */
+.hero-grid-bg {
+  background-image:
+    radial-gradient(circle, var(--border) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.7;
+}
+
+.dark .hero-grid-bg {
+  opacity: 0.35;
+}
+
+/* =============================================
+   PRODUCT CARD
+   ============================================= */
+.product-card {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.product-card:hover {
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
 }

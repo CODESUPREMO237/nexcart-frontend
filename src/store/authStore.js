@@ -2,7 +2,7 @@
  * Authentication Store using Zustand
  */
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import api from '@/lib/api'
 import { saveTokens, saveUser, clearAuth, getCurrentUser } from '@/lib/auth'
 
@@ -12,23 +12,61 @@ const useAuthStore = create(
       // State
       user: null,
       isAuthenticated: false,
+      authReady: false,
+      // roleConfirmed is TRUE only after the backend /me API returns fresh data.
+      // It is NEVER set in the error/fallback path, so stale cached roles can
+      // never leak into role-gated UI (e.g. "Seller Dashboard").
+      // It is NOT persisted — it resets to false on every page load and is
+      // re-set only once checkAuth() or login() confirms the role from the server.
+      roleConfirmed: false,
       isLoading: false,
       error: null,
 
-      // Renamed from initialize to checkAuth to fix the Layout error
-      checkAuth: () => {
-        const user = getCurrentUser()
-        if (user) {
-          set({ user, isAuthenticated: true })
-        } else {
-          set({ user: null, isAuthenticated: false })
+      // Fetches fresh user data from the backend to avoid stale role/data
+      checkAuth: async () => {
+        // Prevent concurrent calls — if already confirmed, skip
+        if (get().roleConfirmed) return
+
+        const hasTokens = typeof window !== 'undefined' && (
+          sessionStorage.getItem('access_token') || sessionStorage.getItem('refresh_token')
+        )
+
+        if (!hasTokens) {
+          set({ user: null, isAuthenticated: false, authReady: true, roleConfirmed: false })
+          return
+        }
+
+        // Do NOT optimistically set stale user — wait for API to confirm.
+        // This prevents a previous account's data (e.g. seller role) from
+        // flashing in the UI before the backend returns fresh data.
+        set({ isAuthenticated: true, roleConfirmed: false, authReady: false })
+
+        try {
+          const freshUser = await api.getCurrentUser()
+          saveUser(freshUser)
+          // Only here do we confirm the role — the backend just told us who this really is.
+          set({ user: freshUser, isAuthenticated: true, authReady: true, roleConfirmed: true })
+        } catch (error) {
+          const refreshToken = typeof window !== 'undefined'
+            ? sessionStorage.getItem('refresh_token')
+            : null
+          if (error.response?.status === 401 && !refreshToken) {
+            clearAuth()
+            sessionStorage.removeItem('auth-storage')
+            set({ user: null, isAuthenticated: false, authReady: true, roleConfirmed: false })
+          } else {
+            // API failed but we still have a refresh token — restore cached user
+            // for general UI but do NOT confirm the role.
+            const cachedUser = getCurrentUser()
+            set({ user: cachedUser, authReady: true, roleConfirmed: false })
+          }
         }
       },
 
       // Set user directly (used by OAuth callback)
       setUser: (user) => {
         saveUser(user)
-        set({ user, isAuthenticated: true })
+        set({ user, isAuthenticated: true, roleConfirmed: true })
       },
 
       // Set tokens directly (used by OAuth callback)
@@ -41,16 +79,18 @@ const useAuthStore = create(
         set({ isLoading: true, error: null })
         try {
           const data = await api.login(email, password)
-          
+
           saveTokens(data.tokens.access, data.tokens.refresh)
           saveUser(data.user)
-          
-          set({ 
-            user: data.user, 
-            isAuthenticated: true, 
-            isLoading: false 
+
+          // The login endpoint returns fresh user data — role is confirmed immediately.
+          set({
+            user: data.user,
+            isAuthenticated: true,
+            isLoading: false,
+            roleConfirmed: true,
           })
-          
+
           return { success: true, user: data.user }
         } catch (error) {
           const errorMessage = error.response?.data?.error || 'Login failed'
@@ -64,16 +104,17 @@ const useAuthStore = create(
         set({ isLoading: true, error: null })
         try {
           const data = await api.register(userData)
-          
+
           saveTokens(data.tokens.access, data.tokens.refresh)
           saveUser(data.user)
-          
-          set({ 
-            user: data.user, 
-            isAuthenticated: true, 
-            isLoading: false 
+
+          set({
+            user: data.user,
+            isAuthenticated: true,
+            isLoading: false,
+            roleConfirmed: true,
           })
-          
+
           return { success: true, user: data.user }
         } catch (error) {
           const responseData = error.response?.data
@@ -84,7 +125,6 @@ const useAuthStore = create(
             } else if (responseData.error) {
               errorMessage = responseData.error
             } else {
-              // DRF field-level validation errors e.g. { password: ['Too common.'], email: ['Already exists.'] }
               const messages = Object.entries(responseData)
                 .map(([field, errors]) => {
                   const fieldName = field.charAt(0).toUpperCase() + field.slice(1).replace(/_/g, ' ')
@@ -104,16 +144,17 @@ const useAuthStore = create(
         set({ isLoading: true, error: null })
         try {
           const data = await api.socialLogin(provider, credentials)
-          
+
           saveTokens(data.tokens.access, data.tokens.refresh)
           saveUser(data.user)
-          
-          set({ 
-            user: data.user, 
-            isAuthenticated: true, 
-            isLoading: false 
+
+          set({
+            user: data.user,
+            isAuthenticated: true,
+            isLoading: false,
+            roleConfirmed: true,
           })
-          
+
           return { success: true, user: data.user }
         } catch (error) {
           const errorMessage = error.response?.data?.error || `${provider} login failed`
@@ -122,26 +163,20 @@ const useAuthStore = create(
         }
       },
 
-      // Login with Google (legacy, kept for compatibility)
-      loginWithGoogle: async (token) => {
-        return get().socialLogin('google', { token })
-      },
+      loginWithGoogle:    async (token)               => useAuthStore.getState().socialLogin('google',    { token }),
+      loginWithDiscord:   async (code, redirect_uri)  => useAuthStore.getState().socialLogin('discord',   { code, redirect_uri }),
+      loginWithMicrosoft: async (code, redirect_uri)  => useAuthStore.getState().socialLogin('microsoft', { code, redirect_uri }),
 
-      // Login with Discord
-      loginWithDiscord: async (code, redirect_uri) => {
-        return get().socialLogin('discord', { code, redirect_uri })
-      },
-
-      // Login with Microsoft
-      loginWithMicrosoft: async (code, redirect_uri) => {
-        return get().socialLogin('microsoft', { code, redirect_uri })
-      },
-
-      // Logout
+      // Logout — completely wipe all auth state so no previous account's role
+      // can ever bleed into the next session.
       logout: () => {
         clearAuth()
         api.logout()
-        
+
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('auth-storage')
+        }
+
         // Reset cart on logout
         if (typeof window !== 'undefined') {
           try {
@@ -149,15 +184,16 @@ const useAuthStore = create(
             const resetCart = cartStore.getState().resetCart
             if (resetCart) resetCart()
           } catch (e) {
-            // Cart store might not be loaded
             console.warn('Could not reset cart on logout')
           }
         }
-        
-        set({ 
-          user: null, 
-          isAuthenticated: false, 
-          error: null 
+
+        set({
+          user: null,
+          isAuthenticated: false,
+          authReady: false,
+          roleConfirmed: false,
+          error: null,
         })
       },
 
@@ -166,14 +202,8 @@ const useAuthStore = create(
         set({ isLoading: true, error: null })
         try {
           const updatedUser = await api.updateProfile(profileData)
-          
           saveUser(updatedUser)
-          
-          set({ 
-            user: updatedUser, 
-            isLoading: false 
-          })
-          
+          set({ user: updatedUser, isLoading: false })
           return { success: true, user: updatedUser }
         } catch (error) {
           const errorMessage = error.response?.data?.error || 'Update failed'
@@ -196,10 +226,8 @@ const useAuthStore = create(
         }
       },
 
-      // Clear error
       clearError: () => set({ error: null }),
 
-      // Check if user is admin
       isAdmin: () => {
         const { user } = get()
         return user?.role === 'admin'
@@ -207,10 +235,14 @@ const useAuthStore = create(
     }),
     {
       name: 'auth-storage',
-      // Store user and auth status in localStorage
-      partialize: (state) => ({ 
-        user: state.user, 
-        isAuthenticated: state.isAuthenticated 
+      storage: createJSONStorage(() => sessionStorage),
+      // We persist NOTHING except isAuthenticated (a boolean with no role/PII).
+      // The stale `user` object (with a previous account's role) must never be
+      // rehydrated — checkAuth() always fetches fresh user data from the backend.
+      // Tokens live in their own sessionStorage keys (access_token, refresh_token)
+      // managed by lib/auth.js, so omitting them here is safe.
+      partialize: (state) => ({
+        isAuthenticated: state.isAuthenticated,
       }),
     }
   )

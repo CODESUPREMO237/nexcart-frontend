@@ -1,4 +1,4 @@
-﻿// Location: app\(auth)\register\page.jsx
+// Location: app\(auth)\register\page.jsx
 'use client'
 
 import { useState } from 'react'
@@ -8,21 +8,22 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Check, X, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Check, X, Eye, EyeOff, ShoppingBag, Store } from 'lucide-react'
 import useAuthStore from '@/store/authStore'
 import { ROUTES } from '@/lib/constants'
-import { loginWithGoogle,loginWithDiscord, loginWithMicrosoft } from '@/lib/auth'
+import { loginWithGoogle, loginWithDiscord, loginWithMicrosoft } from '@/lib/auth'
 
 export default function RegisterPage() {
   const router = useRouter()
   const { register, isLoading, error } = useAuthStore()
-  
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     password_confirm: '',
     first_name: '',
     last_name: '',
+    intended_role: 'buyer', // 'buyer' | 'seller'
   })
 
   const [passwordValidation, setPasswordValidation] = useState({
@@ -35,25 +36,22 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    if (formData.password !== formData.password_confirm) {
-      return
-    }
-    
+    if (formData.password !== formData.password_confirm) return
+
     const result = await register(formData)
-    
     if (result.success) {
-      router.push(ROUTES.HOME)
+      // Sellers go straight to KYC, buyers go home
+      if (result.user?.role === 'seller') {
+        router.push('/seller/kyc')
+      } else {
+        router.push(ROUTES.HOME)
+      }
     }
   }
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    
-    setFormData({
-      ...formData,
-      [name]: value,
-    })
+    setFormData({ ...formData, [name]: value })
 
     if (name === 'password') {
       setPasswordValidation({
@@ -64,21 +62,63 @@ export default function RegisterPage() {
     }
   }
 
+  const setRole = (role) => setFormData((f) => ({ ...f, intended_role: role }))
+
   const passwordsMatch = formData.password === formData.password_confirm
-  const isPasswordValid = passwordValidation.length && passwordValidation.hasNumber && passwordValidation.hasLetter
+  const isPasswordValid =
+    passwordValidation.length && passwordValidation.hasNumber && passwordValidation.hasLetter
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-bold">Create Account</h1>
-        <p className="text-muted-foreground">
-          Sign up to start your shopping journey
-        </p>
+      <div className="space-y-1.5">
+        <span className="font-mono text-xs uppercase tracking-[0.15em] text-accent">Account</span>
+        <h1 className="font-display font-bold text-3xl text-foreground">Create account</h1>
+        <p className="text-sm text-muted-foreground">Sign up to start your journey</p>
       </div>
 
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* ── Role Selector ── */}
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => setRole('buyer')}
+          className={`flex flex-col items-center gap-2 rounded-md border p-4 text-sm font-medium transition-all ${
+            formData.intended_role === 'buyer'
+              ? 'border-accent bg-accent/5 text-foreground'
+              : 'border-border bg-muted/30 text-muted-foreground hover:border-accent/50'
+          }`}
+        >
+          <ShoppingBag className="h-6 w-6" />
+          <span>I&apos;m a Buyer</span>
+          <span className="text-xs font-normal opacity-70">Shop & order products</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setRole('seller')}
+          className={`flex flex-col items-center gap-2 rounded-md border p-4 text-sm font-medium transition-all ${
+            formData.intended_role === 'seller'
+              ? 'border-accent bg-accent/5 text-foreground'
+              : 'border-border bg-muted/30 text-muted-foreground hover:border-accent/50'
+          }`}
+        >
+          <Store className="h-6 w-6" />
+          <span>I&apos;m a Seller</span>
+          <span className="text-xs font-normal opacity-70">List & sell products</span>
+        </button>
+      </div>
+
+      {formData.intended_role === 'seller' && (
+        <Alert className="border-accent/30 bg-accent/5 text-foreground">
+          <Store className="h-4 w-4 text-accent" />
+          <AlertDescription>
+            As a seller you&apos;ll need to verify your identity (KYC) before you can list products.
+            You&apos;ll be guided through this after registration.
+          </AlertDescription>
         </Alert>
       )}
 
@@ -96,7 +136,6 @@ export default function RegisterPage() {
               disabled={isLoading}
             />
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="last_name">Last Name</Label>
             <Input
@@ -141,47 +180,30 @@ export default function RegisterPage() {
             />
             <button
               type="button"
-              onClick={() => setShowPassword((prev) => !prev)}
+              onClick={() => setShowPassword((p) => !p)}
               className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
               disabled={isLoading}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          
+
           {formData.password && (
             <div className="space-y-1 mt-2">
-              <div className="flex items-center text-xs">
-                {passwordValidation.length ? (
-                  <Check className="h-3 w-3 text-green-500 mr-1" />
-                ) : (
-                  <X className="h-3 w-3 text-red-500 mr-1" />
-                )}
-                <span className={passwordValidation.length ? 'text-green-500' : 'text-muted-foreground'}>
-                  At least 8 characters
-                </span>
-              </div>
-              <div className="flex items-center text-xs">
-                {passwordValidation.hasNumber ? (
-                  <Check className="h-3 w-3 text-green-500 mr-1" />
-                ) : (
-                  <X className="h-3 w-3 text-red-500 mr-1" />
-                )}
-                <span className={passwordValidation.hasNumber ? 'text-green-500' : 'text-muted-foreground'}>
-                  Contains a number
-                </span>
-              </div>
-              <div className="flex items-center text-xs">
-                {passwordValidation.hasLetter ? (
-                  <Check className="h-3 w-3 text-green-500 mr-1" />
-                ) : (
-                  <X className="h-3 w-3 text-red-500 mr-1" />
-                )}
-                <span className={passwordValidation.hasLetter ? 'text-green-500' : 'text-muted-foreground'}>
-                  Contains a letter
-                </span>
-              </div>
+              {[
+                [passwordValidation.length, 'At least 8 characters'],
+                [passwordValidation.hasNumber, 'Contains a number'],
+                [passwordValidation.hasLetter, 'Contains a letter'],
+              ].map(([ok, label]) => (
+                <div key={label} className="flex items-center text-xs">
+                  {ok ? (
+                    <Check className="h-3 w-3 text-accent mr-1" />
+                  ) : (
+                    <X className="h-3 w-3 text-destructive mr-1" />
+                  )}
+                  <span className={ok ? 'text-foreground' : 'text-muted-foreground'}>{label}</span>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -202,16 +224,15 @@ export default function RegisterPage() {
             />
             <button
               type="button"
-              onClick={() => setShowConfirmPassword((prev) => !prev)}
+              onClick={() => setShowConfirmPassword((p) => !p)}
               className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
-              aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
               disabled={isLoading}
             >
               {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
           {formData.password_confirm && (
-            <p className={`text-xs ${passwordsMatch ? 'text-green-500' : 'text-red-500'}`}>
+            <p className={`text-xs ${passwordsMatch ? 'text-foreground' : 'text-destructive'}`}>
               {passwordsMatch ? 'Passwords match' : 'Passwords do not match'}
             </p>
           )}
@@ -219,7 +240,7 @@ export default function RegisterPage() {
 
         <Button
           type="submit"
-          className="w-full"
+          className="w-full btn-press"
           disabled={isLoading || !isPasswordValid || !passwordsMatch}
         >
           {isLoading ? (
@@ -227,6 +248,8 @@ export default function RegisterPage() {
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Creating account...
             </>
+          ) : formData.intended_role === 'seller' ? (
+            'Create Seller Account'
           ) : (
             'Create Account'
           )}
@@ -235,17 +258,15 @@ export default function RegisterPage() {
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
+          <span className="w-full border-t border-border" />
         </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            Or continue with
-          </span>
+        <div className="relative flex justify-center text-xs">
+          <span className="bg-background px-2 font-mono uppercase tracking-[0.1em] text-muted-foreground">Or continue with</span>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <Button variant="outline" onClick={loginWithGoogle} disabled={isLoading}>
+        <Button variant="outline" className="btn-press" onClick={loginWithGoogle} disabled={isLoading}>
           <svg className="h-5 w-5" viewBox="0 0 24 24">
             <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -253,12 +274,12 @@ export default function RegisterPage() {
             <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
         </Button>
-        <Button variant="outline" onClick={loginWithDiscord} disabled={isLoading}>
-  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.06.06 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.086 2.157 2.419 0 1.334-.947 2.419-2.157 2.419zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.086 2.157 2.419 0 1.334-.946 2.419-2.157 2.419z"/>
-  </svg>
-</Button>
-        <Button variant="outline" onClick={loginWithMicrosoft} disabled={isLoading}>
+        <Button variant="outline" className="btn-press" onClick={loginWithDiscord} disabled={isLoading}>
+          <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.06.06 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.086 2.157 2.419 0 1.334-.947 2.419-2.157 2.419zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.086 2.157 2.419 0 1.334-.946 2.419-2.157 2.419z"/>
+          </svg>
+        </Button>
+        <Button variant="outline" className="btn-press" onClick={loginWithMicrosoft} disabled={isLoading}>
           <svg className="h-5 w-5" viewBox="0 0 24 24">
             <path fill="#f35325" d="M11.4 11.4H0V0h11.4z"/>
             <path fill="#81bc06" d="M24 11.4H12.6V0H24z"/>
@@ -270,7 +291,7 @@ export default function RegisterPage() {
 
       <p className="text-center text-sm text-muted-foreground">
         Already have an account?{' '}
-        <Link href={ROUTES.LOGIN} className="text-primary hover:underline font-medium">
+        <Link href={ROUTES.LOGIN} className="text-accent hover:underline font-medium">
           Login
         </Link>
       </p>

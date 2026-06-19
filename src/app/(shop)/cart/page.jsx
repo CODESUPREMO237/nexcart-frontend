@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Minus, Plus, X, ShoppingBag, ArrowRight, Loader2 } from 'lucide-react'
@@ -50,7 +49,7 @@ export default function CartPage() {
     try {
       await api.updateCartItem(itemId, newQuantity)
       await loadCart()
-      toast({ title: 'Cart updated', description: 'Quantity has been changed.', variant: 'success' })
+      toast({ title: 'Cart updated', description: 'Quantity updated.', variant: 'success' })
     } catch {
       toast({ title: 'Error', description: 'Failed to update quantity', variant: 'destructive' })
     } finally {
@@ -63,7 +62,7 @@ export default function CartPage() {
     try {
       await api.removeFromCart(itemId)
       await loadCart()
-      toast({ title: 'Item removed', description: `${productName} was removed from your cart.`, variant: 'success' })
+      toast({ title: 'Item removed', description: `${productName} removed.`, variant: 'success' })
     } catch {
       toast({ title: 'Error', description: 'Failed to remove item', variant: 'destructive' })
     } finally {
@@ -73,13 +72,13 @@ export default function CartPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Skeleton className="h-12 w-64 mb-8" />
+      <div className="container mx-auto px-4 max-w-6xl py-10">
+        <Skeleton className="h-8 w-40 mb-8" />
         <div className="grid md:grid-cols-3 gap-8">
           <div className="md:col-span-2 space-y-4">
-            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-32" />)}
+            {[1,2,3].map((i) => <Skeleton key={i} className="h-32 rounded-md" />)}
           </div>
-          <Skeleton className="h-64" />
+          <Skeleton className="h-64 rounded-md" />
         </div>
       </div>
     )
@@ -92,18 +91,15 @@ export default function CartPage() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-20 animate-fade-in">
-        <div className="max-w-md mx-auto text-center">
-          <ShoppingBag className="w-24 h-24 mx-auto mb-6 text-muted-foreground animate-float" />
-          <h1 className="text-3xl font-bold mb-4">Your cart is empty</h1>
-          <p className="text-muted-foreground mb-8">
-            You haven&apos;t added any items to your cart yet.
-          </p>
-          <Button size="lg" asChild className="btn-press">
-            <Link href="/products">
-              Start shopping
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
+      <div className="container mx-auto px-4 max-w-6xl py-24 animate-fade-in">
+        <div className="max-w-sm mx-auto text-center">
+          <div className="w-16 h-16 rounded-md border border-border bg-muted flex items-center justify-center mx-auto mb-5">
+            <ShoppingBag className="w-7 h-7 text-muted-foreground" />
+          </div>
+          <h1 className="font-display font-bold text-2xl text-foreground mb-2">Your cart is empty</h1>
+          <p className="text-sm text-muted-foreground mb-7">You haven&apos;t added any items yet.</p>
+          <Button size="sm" asChild className="btn-press">
+            <Link href="/products">Start shopping <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
           </Button>
         </div>
       </div>
@@ -111,119 +107,130 @@ export default function CartPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 animate-fade-in">
-      <h1 className="text-4xl font-bold mb-8">My Cart</h1>
+    <div className="container mx-auto px-4 max-w-6xl py-10 animate-fade-in">
+      {/* Header */}
+      <div className="mb-8 pb-4 border-b border-border">
+        <span className="font-mono text-xs uppercase tracking-[0.15em] text-accent">Shopping</span>
+        <h1 className="font-display font-bold text-2xl md:text-3xl text-foreground mt-1">
+          My Cart <span className="text-muted-foreground font-normal text-lg">({cartItems.length})</span>
+        </h1>
+      </div>
 
       <div className="grid md:grid-cols-3 gap-8">
-        {/* Cart Items */}
+        {/* Items */}
         <div className="md:col-span-2 space-y-4">
           {cartItems.map((item, idx) => {
             const isUpdating = updatingItem === item.id
             return (
-              <Card key={item.id} className={`card-hover animate-fade-in stagger-${Math.min(idx + 1, 8)} ${isUpdating ? 'opacity-60' : ''}`}>
-                <CardContent className="p-6">
-                  <div className="flex gap-4">
-                    <Link href={`/products/${item.product.id}`} className="relative w-24 h-24 flex-shrink-0 overflow-hidden rounded-lg bg-muted group">
-                      <Image
-                        src={item.product.featured_image || '/placeholder.jpg'}
-                        alt={item.product.name}
-                        fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-110"
-                      />
-                    </Link>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <Link href={`/products/${item.product.id}`}>
-                            <h3 className="font-semibold text-lg hover:text-primary line-clamp-1 transition-colors">
-                              {item.product.name}
-                            </h3>
-                          </Link>
-                          {item.product.category && (
-                            <Badge variant="secondary" className="mt-1">{item.product.category.name}</Badge>
-                          )}
-                        </div>
-                        <Button variant="ghost" size="icon" onClick={() => removeItem(item.id, item.product.name)} disabled={isUpdating} className="btn-press">
-                          {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
-                        </Button>
-                      </div>
-                      <div className="flex items-center justify-between mt-4">
-                        <div className="flex items-center gap-2">
-                          <Button variant="outline" size="icon" className="h-8 w-8 btn-press"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            disabled={isUpdating || item.quantity <= 1}>
-                            <Minus className="h-3 w-3" />
-                          </Button>
-                          <span className="w-12 text-center font-medium">{item.quantity}</span>
-                          <Button variant="outline" size="icon" className="h-8 w-8 btn-press"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            disabled={isUpdating || item.quantity >= item.product.stock_quantity}>
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-primary">
-                            {fcfa(parseFloat(item.product.price) * item.quantity)}
+              <div
+                key={item.id}
+                className={`animate-fade-in border border-border rounded-md bg-card p-5 transition-opacity ${isUpdating ? 'opacity-50' : ''}`}
+                style={{ animationDelay: `${idx * 0.06}s` }}
+              >
+                <div className="flex gap-4">
+                  <Link href={`/products/${item.product.id}`}
+                    className="relative w-20 h-20 shrink-0 overflow-hidden rounded-md bg-muted group">
+                    <Image src={item.product.featured_image || '/placeholder.jpg'} alt={item.product.name}
+                      fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
+                  </Link>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start mb-1">
+                      <div className="flex-1 min-w-0 pr-2">
+                        <Link href={`/products/${item.product.id}`}>
+                          <p className="font-medium text-sm text-foreground hover:text-accent transition-colors line-clamp-1">
+                            {item.product.name}
                           </p>
-                          <p className="text-sm text-muted-foreground">{fcfa(item.product.price)} / unit</p>
-                        </div>
+                        </Link>
+                        {item.product.category && (
+                          <span className="text-xs text-muted-foreground">{item.product.category.name}</span>
+                        )}
                       </div>
-                      {item.product.stock_quantity < 10 && (
-                        <Badge variant="destructive" className="mt-2">
-                          Only {item.product.stock_quantity} left in stock!
-                        </Badge>
-                      )}
+                      <button
+                        className="h-6 w-6 rounded-md border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors btn-press shrink-0"
+                        onClick={() => removeItem(item.id, item.product.name)}
+                        disabled={isUpdating}
+                        aria-label="Remove item"
+                      >
+                        {isUpdating ? <Loader2 className="h-3 w-3 animate-spin" /> : <X className="h-3 w-3" />}
+                      </button>
                     </div>
+
+                    <div className="flex items-center justify-between mt-3">
+                      <div className="flex items-center gap-1 border border-border rounded-md overflow-hidden">
+                        <button
+                          className="h-7 w-7 flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-40"
+                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          disabled={isUpdating || item.quantity <= 1}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                        <span className="w-8 text-center text-sm font-mono font-medium">{item.quantity}</span>
+                        <button
+                          className="h-7 w-7 flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-40"
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          disabled={isUpdating || item.quantity >= item.product.stock_quantity}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-mono font-semibold text-foreground">
+                          {fcfa(parseFloat(item.product.price) * item.quantity)}
+                        </p>
+                        <p className="text-xs text-muted-foreground font-mono">{fcfa(item.product.price)} / unit</p>
+                      </div>
+                    </div>
+
+                    {item.product.stock_quantity < 10 && (
+                      <p className="text-xs text-destructive mt-2">Only {item.product.stock_quantity} left in stock</p>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )
           })}
         </div>
 
-        {/* Order Summary */}
-        <div className="animate-fade-in-right">
-          <Card className="sticky top-4">
-            <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between">
+        {/* Summary */}
+        <div className="animate-fade-in stagger-2">
+          <div className="sticky top-20 border border-border rounded-md bg-card overflow-hidden">
+            <div className="px-5 py-4 border-b border-border bg-muted/40">
+              <span className="font-mono text-xs uppercase tracking-[0.15em] text-foreground">Order Summary</span>
+            </div>
+            <div className="p-5 space-y-3">
+              <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal ({cartItems.length} item{cartItems.length > 1 ? 's' : ''})</span>
-                <span className="font-medium">{fcfa(subtotal)}</span>
+                <span className="font-mono font-medium">{fcfa(subtotal)}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Delivery</span>
-                <span className="font-medium">
+                <span className="font-mono font-medium">
                   {shipping === 0
-                    ? <Badge variant="secondary" className="bg-green-100 text-green-800">FREE</Badge>
+                    ? <span className="text-foreground font-semibold">FREE</span>
                     : fcfa(shipping)}
                 </span>
               </div>
-              {subtotal < 25000 && shipping > 0 && (
-                <div className="bg-primary/10 p-3 rounded-lg">
-                  <p className="text-sm text-primary font-medium">
-                    Add {fcfa(25000 - subtotal)} more for free delivery 🚚
+              {subtotal < 25000 && (
+                <div className="bg-muted border border-border rounded-md p-3">
+                  <p className="text-xs text-muted-foreground">
+                    Add <span className="font-mono font-semibold text-foreground">{fcfa(25000 - subtotal)}</span> more for free delivery
                   </p>
                 </div>
               )}
-              <div className="border-t pt-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold">Total</span>
-                  <span className="text-3xl font-bold text-primary">{fcfa(total)}</span>
-                </div>
+              <div className="border-t border-border pt-3 flex justify-between items-baseline">
+                <span className="font-semibold text-foreground">Total</span>
+                <span className="font-mono font-bold text-xl text-foreground">{fcfa(total)}</span>
               </div>
-            </CardContent>
-            <CardFooter className="flex-col gap-2">
-              <Button size="lg" className="w-full btn-press" onClick={() => router.push('/checkout')}>
-                Proceed to checkout
-                <ArrowRight className="ml-2 h-5 w-5" />
+            </div>
+            <div className="px-5 pb-5 space-y-2">
+              <Button size="sm" className="w-full btn-press" onClick={() => router.push('/checkout')}>
+                Proceed to checkout <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
               </Button>
-              <Button variant="outline" size="lg" className="w-full btn-press" asChild>
+              <Button variant="outline" size="sm" className="w-full btn-press" asChild>
                 <Link href="/products">Continue shopping</Link>
               </Button>
-            </CardFooter>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </div>

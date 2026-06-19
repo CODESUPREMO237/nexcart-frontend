@@ -42,7 +42,8 @@ function ResetPasswordForm() {
 
   const strength = passwordStrength(newPassword)
   const strengthLabel = ['', 'Weak', 'Fair', 'Good', 'Strong'][strength]
-  const strengthColor = ['', 'bg-red-500', 'bg-yellow-500', 'bg-blue-500', 'bg-green-500'][strength]
+  const strengthColor = ['', 'bg-destructive', 'bg-chart-4', 'bg-chart-5', 'bg-accent'][strength]
+  const strengthText = ['', 'text-destructive', 'text-chart-4', 'text-chart-5', 'text-accent'][strength]
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -74,18 +75,18 @@ function ResetPasswordForm() {
     return (
       <div className="space-y-6 text-center">
         <div className="flex justify-center">
-          <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center animate-bounce">
-            <CheckCircle className="h-10 w-10 text-green-500" />
+          <div className="w-16 h-16 rounded-md border border-border bg-accent/10 flex items-center justify-center">
+            <CheckCircle className="h-8 w-8 text-accent" />
           </div>
         </div>
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Password reset!</h1>
-          <p className="text-muted-foreground">
+        <div className="space-y-1.5">
+          <h1 className="font-display font-bold text-3xl text-foreground">Password reset!</h1>
+          <p className="text-sm text-muted-foreground">
             Your password has been updated successfully.
             Redirecting you to login…
           </p>
         </div>
-        <Button asChild className="w-full">
+        <Button asChild className="w-full btn-press">
           <Link href="/login">Go to login</Link>
         </Button>
       </div>
@@ -94,14 +95,14 @@ function ResetPasswordForm() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2 text-center">
+      <div className="space-y-1.5">
         <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-            <KeyRound className="h-8 w-8 text-primary" />
+          <div className="w-14 h-14 rounded-md border border-border bg-accent/10 flex items-center justify-center">
+            <KeyRound className="h-7 w-7 text-accent" />
           </div>
         </div>
-        <h1 className="text-3xl font-bold">Reset password</h1>
-        <p className="text-muted-foreground">
+        <h1 className="font-display font-bold text-3xl text-foreground text-center">Reset password</h1>
+        <p className="text-sm text-muted-foreground text-center">
           Enter the code from your email and choose a new password.
         </p>
       </div>
@@ -172,17 +173,13 @@ function ResetPasswordForm() {
                 {[1, 2, 3, 4].map((i) => (
                   <div
                     key={i}
-                    className={`h-1.5 flex-1 rounded-full transition-all ${
+                    className={`h-1.5 flex-1 rounded-sm transition-all ${
                       i <= strength ? strengthColor : 'bg-muted'
                     }`}
                   />
                 ))}
               </div>
-              <p className={`text-xs font-medium ${
-                strength <= 1 ? 'text-red-500' :
-                strength === 2 ? 'text-yellow-500' :
-                strength === 3 ? 'text-blue-500' : 'text-green-500'
-              }`}>{strengthLabel}</p>
+              <p className={`text-xs font-medium ${strengthText}`}>{strengthLabel}</p>
             </div>
           )}
         </div>
@@ -207,7 +204,7 @@ function ResetPasswordForm() {
 
         <Button
           type="submit"
-          className="w-full"
+          className="w-full btn-press"
           disabled={loading || !email || !otp || !newPassword || newPassword !== confirmPassword}
         >
           {loading ? (
@@ -230,7 +227,7 @@ function ResetPasswordForm() {
         </Link>
         <Link
           href="/forgot-password"
-          className="text-primary hover:underline"
+          className="text-accent hover:underline"
         >
           Resend code
         </Link>
@@ -243,8 +240,8 @@ export default function ResetPasswordPage() {
   return (
     <Suspense fallback={
       <div className="space-y-6 text-center">
-        <h1 className="text-3xl font-bold">Reset password</h1>
-        <p className="text-muted-foreground">Loading…</p>
+        <h1 className="font-display font-bold text-3xl text-foreground">Reset password</h1>
+        <p className="text-sm text-muted-foreground">Loading…</p>
       </div>
     }>
       <ResetPasswordForm />

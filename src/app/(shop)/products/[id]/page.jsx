@@ -7,12 +7,11 @@ import useCartStore from '@/store/cartStore'
 import { useToast } from '@/hooks/useToast'
 import { api } from '@/lib/api'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ShoppingCart, Heart, Star, Minus, Plus, Truck, Shield, RotateCcw } from 'lucide-react'
+import { ShoppingCart, Heart, Star, Minus, Plus, Truck, Shield, RotateCcw, MessageSquare, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import RecentlyViewed, { trackProductView } from '@/components/features/RecentlyViewed'
@@ -31,9 +30,12 @@ export default function ProductDetailPage() {
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
+  const [showContactModal, setShowContactModal] = useState(false)
+  const [contactMessage, setContactMessage] = useState('')
+  const [contactSending, setContactSending] = useState(false)
   const [selectedImage, setSelectedImage] = useState(0)
   const [reviewText, setReviewText] = useState('')
-  const [rating, setRating] = useState(5)
+  const [rating, setRating] = useState(0)
 
   const loadProductData = useCallback(async () => {
     try {
@@ -66,6 +68,8 @@ export default function ProductDetailPage() {
     if (params.id) {
       loadProductData()
       trackProductView(params.id)
+      setReviewText('')
+      setRating(0)
     }
   }, [params.id, loadProductData])
 
@@ -76,7 +80,6 @@ export default function ProductDetailPage() {
         description: 'Please sign in to add items to your cart',
         variant: 'destructive'
       })
-      // Redirect to login page
       router.push('/login')
       return
     }
@@ -150,11 +153,19 @@ export default function ProductDetailPage() {
       router.push('/login')
       return
     }
+    if (rating < 1) {
+      toast({
+        title: 'Rating required',
+        description: 'Please select a star rating before submitting',
+        variant: 'destructive'
+      })
+      return
+    }
 
     try {
       await api.addReview(params.id, rating, reviewText, 'Great product!')
       setReviewText('')
-      setRating(5)
+      setRating(0)
       loadProductData()
       toast({
         title: 'Review submitted!',
@@ -170,13 +181,39 @@ export default function ProductDetailPage() {
     }
   }
 
+  const handleSendMessage = async () => {
+    if (!isAuthenticated) {
+      toast({ title: 'Sign in required', description: 'Please sign in to contact the seller', variant: 'destructive' })
+      router.push('/login')
+      return
+    }
+    if (!contactMessage.trim()) return
+    setContactSending(true)
+    try {
+      const response = await api.post(`/vendors/${product.vendor.slug}/contact/`, { message: contactMessage })
+      if (response.data?.conversation_id) {
+        toast({ title: 'Message sent!', description: 'Redirecting to messages...', variant: 'success' })
+        router.push(`/messages?conversation=${response.data.conversation_id}`)
+      } else {
+        toast({ title: 'Message sent!', description: 'The seller will reply to your registered email.', variant: 'success' })
+        setShowContactModal(false)
+        setContactMessage('')
+      }
+    } catch (e) {
+      toast({ title: 'Error', description: e?.response?.data?.error || 'Failed to send message', variant: 'destructive' })
+    } finally {
+      setContactSending(false)
+    }
+  }
+
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-2 gap-8">
-          <Skeleton className="aspect-square rounded-lg" />
+      <div className="container mx-auto px-4 max-w-6xl py-10">
+        <div className="grid md:grid-cols-2 gap-10">
+          <Skeleton className="aspect-square rounded-md" />
           <div className="space-y-4">
-            <Skeleton className="h-12 w-3/4" />
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-9 w-3/4" />
             <Skeleton className="h-6 w-1/2" />
             <Skeleton className="h-32 w-full" />
           </div>
@@ -187,9 +224,9 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <div className="container mx-auto px-4 py-20 text-center">
-        <h1 className="text-3xl font-bold mb-4">Product Not Found</h1>
-        <Button asChild>
+      <div className="container mx-auto px-4 py-24 text-center">
+        <h1 className="font-display font-bold text-2xl text-foreground mb-4">Product Not Found</h1>
+        <Button asChild className="btn-press">
           <Link href="/products">Browse All Products</Link>
         </Button>
       </div>
@@ -200,38 +237,44 @@ export default function ProductDetailPage() {
     ? [product.featured_image, ...product.images.map(img => img.image)].filter(Boolean)
     : product.featured_image ? [product.featured_image] : []
 
+  // FIX (Bug 3): Find whether the logged-in user already has a review.
+  // review.user is the raw UUID from the serializer, so compare as strings.
+  const userReview = isAuthenticated && user
+    ? reviews.find(r => String(r.user) === String(user.id))
+    : null
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 max-w-6xl py-10 animate-fade-in">
       {/* Breadcrumb */}
-      <nav className="mb-8 text-sm text-muted-foreground">
-        <Link href="/" className="hover:text-primary">Home</Link>
+      <nav className="mb-8 text-xs font-mono uppercase tracking-[0.1em] text-muted-foreground">
+        <Link href="/" className="hover:text-accent transition-colors">Home</Link>
         <span className="mx-2">/</span>
-        <Link href="/products" className="hover:text-primary">Products</Link>
+        <Link href="/products" className="hover:text-accent transition-colors">Products</Link>
         <span className="mx-2">/</span>
         <span className="text-foreground">{product.name}</span>
       </nav>
 
       {/* Product Section */}
-      <div className="grid md:grid-cols-2 gap-8 mb-16">
+      <div className="grid md:grid-cols-2 gap-10 mb-16">
         {/* Images */}
-        <div className="space-y-4">
-          <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
+        <div className="space-y-3">
+          <div className="relative aspect-square overflow-hidden rounded-md bg-muted border border-border">
             {images.length > 0 ? (
               <Image
                 src={images[selectedImage]}
                 alt={product.name}
                 fill
-                className="object-cover transition-transform duration-300 hover:scale-110 cursor-zoom-in"
+                className="object-cover transition-transform duration-300 hover:scale-105 cursor-zoom-in"
                 priority
                 unoptimized
               />
             ) : (
               <div className="flex items-center justify-center w-full h-full">
-                <span className="text-muted-foreground text-lg">No Image Available</span>
+                <span className="text-muted-foreground text-sm">No Image Available</span>
               </div>
             )}
             {product.discount_percentage > 0 && (
-              <Badge className="absolute top-4 right-4 bg-destructive text-lg px-3 py-1">
+              <Badge className="absolute top-3 right-3 bg-destructive text-destructive-foreground rounded-sm font-mono">
                 -{product.discount_percentage}%
               </Badge>
             )}
@@ -243,8 +286,8 @@ export default function ProductDetailPage() {
                 <button
                   key={idx}
                   onClick={() => setSelectedImage(idx)}
-                  className={`relative aspect-square overflow-hidden rounded-lg border-2 transition-all ${
-                    selectedImage === idx ? 'border-primary' : 'border-transparent hover:border-muted-foreground/50'
+                  className={`relative aspect-square overflow-hidden rounded-md border transition-all ${
+                    selectedImage === idx ? 'border-accent' : 'border-border hover:border-accent/50'
                   }`}
                 >
                   <Image
@@ -262,67 +305,93 @@ export default function ProductDetailPage() {
         {/* Product Info */}
         <div className="space-y-6">
           <div>
-            <h1 className="text-4xl font-bold mb-2">{product.name}</h1>
             {product.category && (
               <Link href={`/products?category=${product.category.id}`}>
-                <Badge variant="secondary" className="mb-4">
+                <span className="font-mono text-xs uppercase tracking-[0.15em] text-accent">
                   {product.category.name}
-                </Badge>
+                </span>
               </Link>
             )}
+            <h1 className="font-display font-bold text-3xl text-foreground mt-1 mb-3">{product.name}</h1>
             
-           <div className="flex items-center gap-4 mb-4">
-  <div className="flex items-center">
-    {[...Array(5)].map((_, i) => {
-      // Convert to number for the comparison logic
-      const rating = Number(product.average_rating || 0);
-      return (
-        <Star
-          key={i}
-          className={`w-5 h-5 ${
-            i < Math.floor(rating)
-              ? 'fill-yellow-400 text-yellow-400'
-              : 'text-gray-300'
-          }`}
-        />
-      );
-    })}
-  </div>
-  <span className="text-sm text-muted-foreground">
-    {/* Convert to number before calling .toFixed */}
-    {Number(product.average_rating || 0).toFixed(1)} ({product.review_count || 0} reviews)
-  </span>
-</div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center">
+                {[...Array(5)].map((_, i) => {
+                  const avgRating = Number(product.average_rating || 0)
+                  return (
+                    <Star
+                      key={i}
+                      className={`w-4 h-4 ${
+                        i < Math.floor(avgRating)
+                          ? 'fill-yellow-400 text-yellow-400'
+                          : 'text-muted-foreground/30'
+                      }`}
+                    />
+                  )
+                })}
+              </div>
+              <span className="text-sm text-muted-foreground">
+                {Number(product.average_rating || 0).toFixed(1)} ({product.review_count || 0} reviews)
+              </span>
+            </div>
           </div>
 
-          <div className="border-t border-b py-4">
-            <div className="flex items-baseline gap-3 mb-2">
-              <span className="text-4xl font-bold text-primary">
+          <div className="border-t border-b border-border py-4">
+            <div className="flex items-baseline gap-3 mb-2 font-mono">
+              <span className="text-3xl font-semibold text-foreground">
                 {fcfa(product.price)}
               </span>
               {product.compare_price && (
                 <>
-                  <span className="text-2xl text-muted-foreground line-through">
+                  <span className="text-lg text-muted-foreground line-through">
                     {fcfa(product.compare_price)}
                   </span>
-                  <Badge variant="destructive">
+                  <Badge variant="destructive" className="rounded-sm">
                     Save {fcfa(parseFloat(product.compare_price) - parseFloat(product.price))}
                   </Badge>
                 </>
               )}
             </div>
             {product.is_in_stock ? (
-              <Badge variant="secondary" className="bg-green-100 text-green-800">
+              <Badge variant="secondary" className="rounded-sm border border-accent/30 bg-accent/10 text-accent">
                 In Stock ({product.stock_quantity} available)
               </Badge>
             ) : (
-              <Badge variant="destructive">Out of Stock</Badge>
+              <Badge variant="destructive" className="rounded-sm">Out of Stock</Badge>
             )}
           </div>
 
           <div>
-            <p className="text-lg leading-relaxed">{product.description}</p>
+            <p className="text-sm leading-relaxed text-muted-foreground">{product.description}</p>
           </div>
+
+          {/* Seller info strip */}
+          {product.vendor && (
+            <div className="flex items-center justify-between p-3 rounded-md bg-muted border border-border">
+              <div className="text-sm">
+                <span className="text-muted-foreground">Sold by </span>
+                <span className="font-semibold text-foreground">{product.vendor.store_name}</span>
+                {product.vendor.city && (
+                  <span className="text-muted-foreground"> · {product.vendor.city}</span>
+                )}
+              </div>
+              {/* Hide button if the current user IS the seller, or is an admin */}
+              {user?.role !== 'admin' && String(user?.id) !== String(product.vendor.user_id) && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="btn-press"
+                  onClick={() => {
+                    if (!isAuthenticated) { router.push('/login'); return }
+                    setShowContactModal(true)
+                  }}
+                >
+                  <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
+                  Message Seller
+                </Button>
+              )}
+            </div>
+          )}
 
           {/* Quantity Selector */}
           <div className="space-y-4">
@@ -332,6 +401,7 @@ export default function ProductDetailPage() {
                 <Button
                   variant="outline"
                   size="icon"
+                  className="btn-press"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 >
                   <Minus className="h-4 w-4" />
@@ -343,11 +413,12 @@ export default function ProductDetailPage() {
                   max={product.stock_quantity}
                   value={quantity}
                   onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-20 text-center"
+                  className="w-20 text-center font-mono"
                 />
                 <Button
                   variant="outline"
                   size="icon"
+                  className="btn-press"
                   onClick={() => setQuantity(Math.min(product.stock_quantity, quantity + 1))}
                 >
                   <Plus className="h-4 w-4" />
@@ -358,39 +429,40 @@ export default function ProductDetailPage() {
             <div className="flex gap-3">
               <Button
                 size="lg"
-                className="flex-1"
+                className="flex-1 btn-press"
                 onClick={handleAddToCart}
                 disabled={!product.is_in_stock}
               >
-                <ShoppingCart className="mr-2 h-5 w-5" />
+                <ShoppingCart className="mr-2 h-4 w-4" />
                 {isAuthenticated ? 'Add to Cart' : 'Sign in to Add to Cart'}
               </Button>
               <Button
                 size="lg"
                 variant="outline"
+                className="btn-press"
                 onClick={handleAddToWishlist}
               >
-                <Heart className="h-5 w-5" />
+                <Heart className="h-4 w-4" />
               </Button>
             </div>
           </div>
 
           {/* Features */}
-          <div className="grid grid-cols-3 gap-4 pt-6 border-t">
+          <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border">
             <div className="flex flex-col items-center text-center">
-              <Truck className="h-8 w-8 text-primary mb-2" />
-              <span className="text-sm font-medium">Free Shipping</span>
-              <span className="text-xs text-muted-foreground">On orders over 25,000 FCFA</span>
+              <Truck className="h-6 w-6 text-accent mb-2" />
+              <span className="text-xs font-medium text-foreground">Free Shipping</span>
+              <span className="text-xs text-muted-foreground mt-0.5">On orders over 25,000 FCFA</span>
             </div>
             <div className="flex flex-col items-center text-center">
-              <Shield className="h-8 w-8 text-primary mb-2" />
-              <span className="text-sm font-medium">Secure Payment</span>
-              <span className="text-xs text-muted-foreground">100% Protected</span>
+              <Shield className="h-6 w-6 text-accent mb-2" />
+              <span className="text-xs font-medium text-foreground">Secure Payment</span>
+              <span className="text-xs text-muted-foreground mt-0.5">100% Protected</span>
             </div>
             <div className="flex flex-col items-center text-center">
-              <RotateCcw className="h-8 w-8 text-primary mb-2" />
-              <span className="text-sm font-medium">Easy Returns</span>
-              <span className="text-xs text-muted-foreground">30 Day Policy</span>
+              <RotateCcw className="h-6 w-6 text-accent mb-2" />
+              <span className="text-xs font-medium text-foreground">Easy Returns</span>
+              <span className="text-xs text-muted-foreground mt-0.5">30 Day Policy</span>
             </div>
           </div>
         </div>
@@ -398,14 +470,42 @@ export default function ProductDetailPage() {
 
       {/* Reviews Section */}
       <div className="mb-16">
-        <h2 className="text-3xl font-bold mb-8">Customer Reviews</h2>
-        
-        {isAuthenticated && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Write a Review</CardTitle>
-            </CardHeader>
-            <CardContent>
+        <div className="mb-6 pb-4 border-b border-border">
+          <span className="font-mono text-xs uppercase tracking-[0.15em] text-accent">Feedback</span>
+          <h2 className="font-display font-bold text-2xl text-foreground mt-1">Customer Reviews</h2>
+        </div>
+
+        {/* FIX (Bug 3): Show the user's existing review if they already submitted one,
+            otherwise show the write-a-review form (or sign-in prompt). */}
+        {isAuthenticated ? (
+          userReview ? (
+            /* User has already reviewed — show their review with an "Edit" note */
+            <div className="mb-8 border border-accent/30 rounded-md bg-card p-6">
+              <p className="text-xs font-mono uppercase tracking-[0.1em] text-muted-foreground mb-3">Your Review</p>
+              <div className="flex items-center gap-2 mb-2">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`w-4 h-4 ${
+                      i < userReview.rating
+                        ? 'fill-yellow-400 text-yellow-400'
+                        : 'text-muted-foreground/30'
+                    }`}
+                  />
+                ))}
+                <span className="text-xs text-muted-foreground ml-1">
+                  {new Date(userReview.created_at).toLocaleDateString()}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">{userReview.comment}</p>
+              <p className="text-xs text-muted-foreground mt-3">
+                You have already reviewed this product. Contact support to request changes.
+              </p>
+            </div>
+          ) : (
+            /* User is logged in but hasn't reviewed yet — show the write form */
+            <div className="mb-8 border border-border rounded-md bg-card p-6">
+              <h3 className="font-display font-semibold text-base text-foreground mb-4">Write a Review</h3>
               <form onSubmit={handleSubmitReview} className="space-y-4">
                 <div>
                   <Label>Rating</Label>
@@ -418,10 +518,10 @@ export default function ProductDetailPage() {
                         className="focus:outline-none"
                       >
                         <Star
-                          className={`w-8 h-8 ${
+                          className={`w-7 h-7 ${
                             star <= rating
                               ? 'fill-yellow-400 text-yellow-400'
-                              : 'text-gray-300'
+                              : 'text-muted-foreground/30'
                           }`}
                         />
                       </button>
@@ -433,61 +533,68 @@ export default function ProductDetailPage() {
                   <textarea
                     id="review"
                     rows={4}
-                    className="w-full mt-2 px-3 py-2 border rounded-md"
+                    className="w-full mt-2 px-3 py-2 border border-border rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
                     value={reviewText}
                     onChange={(e) => setReviewText(e.target.value)}
                     placeholder="Share your experience with this product..."
                     required
                   />
                 </div>
-                <Button type="submit">Submit Review</Button>
+                <Button type="submit" className="btn-press">Submit Review</Button>
               </form>
-            </CardContent>
-          </Card>
+            </div>
+          )
+        ) : (
+          <div className="mb-8 border border-dashed border-border rounded-md bg-card p-6 text-center">
+            <p className="text-sm text-muted-foreground mb-3">Sign in to write a review</p>
+            <Button variant="outline" className="btn-press" onClick={() => router.push('/login')}>Sign In</Button>
+          </div>
         )}
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {reviews.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
+            <p className="text-center text-sm text-muted-foreground py-8">
               No reviews yet. Be the first to review this product!
             </p>
           ) : (
             reviews.map((review) => (
-              <Card key={review.id}>
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold">{review.user?.first_name || 'Anonymous'}</span>
-                        {review.is_verified_purchase && (
-                          <Badge variant="secondary" className="text-xs">
-                            Verified Purchase
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`w-4 h-4 ${
-                              i < review.rating
-                                ? 'fill-yellow-400 text-yellow-400'
-                                : 'text-gray-300'
-                            }`}
-                          />
-                        ))}
-                      </div>
+              <div key={review.id} className="border border-border rounded-md bg-card p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      {/* FIX (Bug 2): use review.user_name — the serializer returns the
+                          user's full name at the top level, not nested under review.user */}
+                      <span className="font-semibold text-sm text-foreground">
+                        {review.user_name || 'Anonymous'}
+                      </span>
+                      {review.is_verified_purchase && (
+                        <Badge variant="secondary" className="text-xs rounded-sm">
+                          Verified Purchase
+                        </Badge>
+                      )}
                     </div>
-                    <span className="text-sm text-muted-foreground">
-                      {new Date(review.created_at).toLocaleDateString()}
-                    </span>
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-3.5 h-3.5 ${
+                            i < review.rating
+                              ? 'fill-yellow-400 text-yellow-400'
+                              : 'text-muted-foreground/30'
+                          }`}
+                        />
+                      ))}
+                    </div>
                   </div>
-                  {review.title && (
-                    <h4 className="font-semibold mb-2">{review.title}</h4>
-                  )}
-                  <p className="text-muted-foreground">{review.comment}</p>
-                </CardContent>
-              </Card>
+                  <span className="text-xs font-mono text-muted-foreground">
+                    {new Date(review.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                {review.title && (
+                  <h4 className="font-semibold text-sm text-foreground mb-1">{review.title}</h4>
+                )}
+                <p className="text-sm text-muted-foreground">{review.comment}</p>
+              </div>
             ))
           )}
         </div>
@@ -496,41 +603,89 @@ export default function ProductDetailPage() {
       {/* Related Products */}
       {relatedProducts.length > 0 && (
         <div>
-          <h2 className="text-3xl font-bold mb-8">Related Products</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="mb-6 pb-4 border-b border-border">
+            <span className="font-mono text-xs uppercase tracking-[0.15em] text-accent">More to explore</span>
+            <h2 className="font-display font-bold text-2xl text-foreground mt-1">Related Products</h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
             {relatedProducts.map((relatedProduct) => (
-              <Card key={relatedProduct.id} className="group hover:shadow-lg transition-shadow">
-                <Link href={`/products/${relatedProduct.id}`}>
-                  <div className="relative aspect-square overflow-hidden rounded-t-lg bg-muted">
-                    {relatedProduct.featured_image ? (
-                      <Image
-                        src={relatedProduct.featured_image}
-                        alt={relatedProduct.name}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center w-full h-full">
-                        <span className="text-muted-foreground">No Image</span>
-                      </div>
-                    )}
-                  </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold mb-2 line-clamp-2">
-                      {relatedProduct.name}
-                    </h3>
-                    <p className="text-lg font-bold text-primary">
-                      {fcfa(relatedProduct.price)}
-                    </p>
-                  </CardContent>
-                </Link>
-              </Card>
+              <Link
+                key={relatedProduct.id}
+                href={`/products/${relatedProduct.id}`}
+                className="product-card group border border-border rounded-md overflow-hidden bg-card block"
+              >
+                <div className="relative aspect-square overflow-hidden bg-muted">
+                  {relatedProduct.featured_image ? (
+                    <Image
+                      src={relatedProduct.featured_image}
+                      alt={relatedProduct.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center w-full h-full">
+                      <span className="text-xs text-muted-foreground">No Image</span>
+                    </div>
+                  )}
+                </div>
+                <div className="p-4">
+                  <h3 className="text-sm font-medium text-foreground line-clamp-2 mb-2 leading-snug">
+                    {relatedProduct.name}
+                  </h3>
+                  <p className="text-base font-semibold text-foreground font-mono">
+                    {fcfa(relatedProduct.price)}
+                  </p>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
       )}
       <RecentlyViewed />
+
+      {/* Contact Seller Modal */}
+      {showContactModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/60 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md rounded-md bg-card border border-border shadow-2xl p-6 space-y-4 animate-scale-in">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-display font-semibold text-foreground text-lg">Message Seller</h3>
+                <p className="text-sm text-muted-foreground">{product.vendor?.store_name}</p>
+              </div>
+              <button
+                onClick={() => { setShowContactModal(false); setContactMessage('') }}
+                className="p-1.5 rounded-md hover:bg-muted text-muted-foreground transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <textarea
+              value={contactMessage}
+              onChange={e => setContactMessage(e.target.value)}
+              placeholder="Ask about availability, shipping, customisation..."
+              rows={4}
+              className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 resize-none"
+            />
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1 btn-press"
+                onClick={() => { setShowContactModal(false); setContactMessage('') }}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1 btn-press"
+                disabled={contactSending || !contactMessage.trim()}
+                onClick={handleSendMessage}
+              >
+                {contactSending ? 'Sending...' : 'Send Message'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

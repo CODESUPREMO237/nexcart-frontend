@@ -3,7 +3,7 @@
  * Shopping Cart Store using Zustand
  */
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import api from '@/lib/api'
 
 const useCartStore = create(
@@ -19,7 +19,7 @@ const useCartStore = create(
       // Fetch cart from server
       fetchCart: async () => {
         // Only fetch if authenticated
-        const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+        const token = typeof window !== 'undefined' ? sessionStorage.getItem('access_token') : null
         if (!token) {
           set({ items: [], totalItems: 0, subtotal: 0 })
           return
@@ -49,7 +49,7 @@ const useCartStore = create(
       // Add item to cart
       addItem: async (productId, quantity = 1) => {
         // Check if user is authenticated
-        const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+        const token = typeof window !== 'undefined' ? sessionStorage.getItem('access_token') : null
         if (!token) {
           // Redirect to login
           if (typeof window !== 'undefined') {
@@ -201,6 +201,8 @@ const useCartStore = create(
     }),
     {
       name: 'cart-storage',
+      // Tied to sessionStorage to match auth-storage scoping (per-tab session)
+      storage: createJSONStorage(() => sessionStorage),
       partialize: (state) => ({
         items: state.items,
         totalItems: state.totalItems,

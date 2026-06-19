@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import api from '@/lib/api' 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import api from '@/lib/api'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -50,18 +49,19 @@ export default function SettingsPage() {
 
   if (loading) return (
     <div className="flex h-64 items-center justify-center">
-      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <Loader2 className="w-8 h-8 animate-spin text-accent" />
     </div>
   )
 
   return (
     <div className="p-6 space-y-6 max-w-4xl mx-auto">
-      <div className="flex justify-between items-end">
+      <div className="flex justify-between items-end flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Store Settings</h1>
-          <p className="text-muted-foreground">Configure global parameters and security.</p>
+          <p className="text-[11px] font-mono uppercase tracking-[0.15em] text-accent mb-1">Configuration</p>
+          <h1 className="text-3xl font-display font-bold text-foreground">Store Settings</h1>
+          <p className="text-muted-foreground text-sm mt-1">Configure global parameters and security.</p>
         </div>
-        <Button onClick={handleSave} disabled={saving} className="gap-2">
+        <Button onClick={handleSave} disabled={saving} className="gap-2 rounded-md">
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           Save Changes
         </Button>
@@ -74,51 +74,57 @@ export default function SettingsPage() {
         </TabsList>
 
         <TabsContent value="general">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Settings2 className="w-5 h-5"/> Branding</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-md bg-card">
+            <div className="px-5 py-4 border-b border-border">
+              <h2 className="font-display font-semibold text-foreground flex items-center gap-2 text-sm">
+                <Settings2 className="w-4 h-4 text-accent" /> Branding
+              </h2>
+            </div>
+            <div className="p-5 space-y-4">
               <div className="space-y-2">
                 <Label>Store Name</Label>
-                <Input 
-                  value={settings.store_name} 
-                  onChange={(e) => setSettings({...settings, store_name: e.target.value})} 
+                <Input
+                  className="rounded-md"
+                  value={settings.store_name}
+                  onChange={(e) => setSettings({ ...settings, store_name: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Support Email</Label>
-                <Input 
-                  value={settings.support_email} 
-                  onChange={(e) => setSettings({...settings, support_email: e.target.value})} 
+                <Input
+                  className="rounded-md"
+                  value={settings.support_email}
+                  onChange={(e) => setSettings({ ...settings, support_email: e.target.value })}
                 />
               </div>
-              <div className="flex items-center justify-between pt-4">
+              <div className="flex items-center justify-between pt-4 border-t border-border">
                 <Label>Maintenance Mode</Label>
-                <Switch 
-                  checked={settings.maintenance_mode} 
-                  onCheckedChange={(val) => setSettings({...settings, maintenance_mode: val})} 
+                <Switch
+                  checked={settings.maintenance_mode}
+                  onCheckedChange={(val) => setSettings({ ...settings, maintenance_mode: val })}
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="security">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2"><ShieldCheck className="w-5 h-5"/> Access Control</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="border border-border rounded-md bg-card">
+            <div className="px-5 py-4 border-b border-border">
+              <h2 className="font-display font-semibold text-foreground flex items-center gap-2 text-sm">
+                <ShieldCheck className="w-4 h-4 text-accent" /> Access Control
+              </h2>
+            </div>
+            <div className="p-5">
               <div className="flex items-center justify-between">
                 <Label>Require Email Verification</Label>
-                <Switch 
-                  checked={settings.require_email_verification} 
-                  onCheckedChange={(val) => setSettings({...settings, require_email_verification: val})} 
+                <Switch
+                  checked={settings.require_email_verification}
+                  onCheckedChange={(val) => setSettings({ ...settings, require_email_verification: val })}
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
