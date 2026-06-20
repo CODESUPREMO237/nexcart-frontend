@@ -1,11 +1,25 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Store, Phone, MapPin, CreditCard, Loader2, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import api from '@/lib/api'
+import useAuthStore from '@/store/authStore'
 
 export default function SellerRegisterPage() {
+  const router = useRouter()
+  const { isAuthenticated, authReady, checkAuth } = useAuthStore()
+
+  useEffect(() => { checkAuth() }, [checkAuth])
+
+  useEffect(() => {
+    if (!authReady) return
+    if (!isAuthenticated) {
+      router.push('/login?redirect=' + encodeURIComponent('/seller/register'))
+    }
+  }, [authReady, isAuthenticated, router])
+
   const [form, setForm] = useState({
     store_name: '', description: '', phone: '', whatsapp: '',
     email: '', address: '', city: 'Tiko', region: 'South West',
@@ -29,6 +43,14 @@ export default function SellerRegisterPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (!authReady || !isAuthenticated) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    )
   }
 
   if (success) {

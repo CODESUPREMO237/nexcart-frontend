@@ -35,6 +35,14 @@ const translations = {
     'feature.returns': 'Easy Returns',
     'feature.returns_desc': '30-day return policy',
 
+    // Trust panel (homepage hero)
+    'trust.sellers_label': 'Verified sellers',
+    'trust.sellers_desc': 'Every vendor passes KYC review before listing.',
+    'trust.momo_label': 'Mobile money checkout',
+    'trust.momo_desc': 'Pay with MTN Mobile Money or Orange Money.',
+    'trust.delivery_label': 'Local delivery',
+    'trust.delivery_desc': 'Tracked delivery from Tiko across the Southwest.',
+
     // Products
     'product.featured': 'Featured Products',
     'product.recommended': 'Recommended for You',
@@ -64,6 +72,13 @@ const translations = {
     'cart.coupon_placeholder': 'Enter coupon code',
     'cart.free_delivery': 'Free delivery',
     'cart.login_required': 'Please sign in to add items',
+    'cart.empty_desc': "You haven't added any items yet.",
+    'cart.continue_shopping': 'Continue shopping',
+    'cart.start_shopping': 'Start shopping',
+    'cart.low_stock': 'Only {n} left in stock',
+    'cart.unit': 'unit',
+    'cart.item_count': 'item',
+    'cart.add_more_free': 'more for free delivery',
 
     // Delivery
     'delivery.select_zone': 'Select Delivery Area',
@@ -108,6 +123,21 @@ const translations = {
     'common.filter': 'Filter',
     'common.sort': 'Sort',
     'common.install_app': 'Install NexCart App',
+
+    // Footer
+    'footer.tagline': "Cameroon's marketplace built for how people actually shop — local, mobile, simple.",
+    'footer.shop': 'Shop',
+    'footer.all_products': 'All Products',
+    'footer.support': 'Support',
+    'footer.about': 'About Us',
+    'footer.contact': 'Contact Us',
+    'footer.shipping': 'Shipping',
+    'footer.returns': 'Returns & Exchanges',
+    'footer.newsletter': 'Newsletter',
+    'footer.newsletter_desc': 'Get offers and updates delivered to your inbox.',
+    'footer.subscribe': 'Subscribe',
+    'footer.privacy': 'Privacy Policy',
+    'footer.terms': 'Terms of Use',
   },
 
   fr: {
@@ -143,6 +173,14 @@ const translations = {
     'feature.returns': 'Retours Faciles',
     'feature.returns_desc': 'Politique de retour de 30 jours',
 
+    // Trust panel (homepage hero)
+    'trust.sellers_label': 'Vendeurs vérifiés',
+    'trust.sellers_desc': 'Chaque vendeur passe une vérification KYC avant publication.',
+    'trust.momo_label': 'Paiement mobile money',
+    'trust.momo_desc': 'Payez avec MTN Mobile Money ou Orange Money.',
+    'trust.delivery_label': 'Livraison locale',
+    'trust.delivery_desc': 'Livraison suivie depuis Tiko dans tout le Sud-Ouest.',
+
     // Products
     'product.featured': 'Produits Vedettes',
     'product.recommended': 'Recommandé pour Vous',
@@ -172,6 +210,13 @@ const translations = {
     'cart.coupon_placeholder': 'Entrez le code promo',
     'cart.free_delivery': 'Livraison gratuite',
     'cart.login_required': 'Veuillez vous connecter',
+    'cart.empty_desc': "Vous n'avez encore ajouté aucun article.",
+    'cart.continue_shopping': 'Continuer les achats',
+    'cart.start_shopping': 'Commencer les achats',
+    'cart.low_stock': 'Seulement {n} en stock',
+    'cart.unit': 'unité',
+    'cart.item_count': 'article',
+    'cart.add_more_free': 'de plus pour la livraison gratuite',
 
     // Delivery
     'delivery.select_zone': 'Sélectionnez la Zone de Livraison',
@@ -216,6 +261,21 @@ const translations = {
     'common.filter': 'Filtrer',
     'common.sort': 'Trier',
     'common.install_app': 'Installer l\'App NexCart',
+
+    // Footer
+    'footer.tagline': "La marketplace du Cameroun adaptée à la façon dont les gens font leurs achats — local, mobile, simple.",
+    'footer.shop': 'Boutique',
+    'footer.all_products': 'Tous les Produits',
+    'footer.support': 'Assistance',
+    'footer.about': 'À Propos',
+    'footer.contact': 'Nous Contacter',
+    'footer.shipping': 'Livraison',
+    'footer.returns': 'Retours et Échanges',
+    'footer.newsletter': 'Newsletter',
+    'footer.newsletter_desc': 'Recevez nos offres et mises à jour par email.',
+    'footer.subscribe': "S'abonner",
+    'footer.privacy': 'Politique de Confidentialité',
+    'footer.terms': "Conditions d'Utilisation",
   },
 
   pcm: {
@@ -252,6 +312,14 @@ const translations = {
     'feature.returns': 'Easy Returns',
     'feature.returns_desc': '30 days return policy',
 
+    // Trust panel (homepage hero)
+    'trust.sellers_label': 'Sellers Wey Don Verify',
+    'trust.sellers_desc': 'Every seller pass KYC check before dem fit sell.',
+    'trust.momo_label': 'Mobile Money Payment',
+    'trust.momo_desc': 'Pay with MTN Mobile Money or Orange Money.',
+    'trust.delivery_label': 'Local Delivery',
+    'trust.delivery_desc': 'Dem dey track ya delivery from Tiko go all Southwest.',
+
     // Products
     'product.featured': 'Hot Products',
     'product.recommended': 'Recommended for You',
@@ -281,6 +349,13 @@ const translations = {
     'cart.coupon_placeholder': 'Put coupon code here',
     'cart.free_delivery': 'Delivery free',
     'cart.login_required': 'Abeg login first',
+    'cart.empty_desc': "You never put anything inside ya basket.",
+    'cart.continue_shopping': 'Continue Shopping',
+    'cart.start_shopping': 'Start Shopping',
+    'cart.low_stock': 'Na {n} dem remain',
+    'cart.unit': 'unit',
+    'cart.item_count': 'tin',
+    'cart.add_more_free': 'more for free delivery',
 
     // Delivery
     'delivery.select_zone': 'Choose Delivery Area',
@@ -325,6 +400,21 @@ const translations = {
     'common.filter': 'Filter',
     'common.sort': 'Arrange',
     'common.install_app': 'Install NexCart App',
+
+    // Footer
+    'footer.tagline': "Cameroon market wey sabi how people dey shop — local, mobile, simple.",
+    'footer.shop': 'Shop',
+    'footer.all_products': 'All Products Dem',
+    'footer.support': 'Help',
+    'footer.about': 'About We',
+    'footer.contact': 'Contact We',
+    'footer.shipping': 'Delivery',
+    'footer.returns': 'Returns Dem',
+    'footer.newsletter': 'Newsletter',
+    'footer.newsletter_desc': 'Get news and offer for ya email.',
+    'footer.subscribe': 'Join',
+    'footer.privacy': 'Privacy Policy',
+    'footer.terms': 'Terms Wey We Get',
   }
 }
 

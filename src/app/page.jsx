@@ -14,20 +14,21 @@ import { ShoppingCart, Heart, Star, ArrowRight, ArrowUpRight, ShieldCheck, Truck
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import ProductImage from '@/components/ProductImage'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 const fcfa = (n) =>
   new Intl.NumberFormat('en-CM', { style: 'currency', currency: 'XAF', maximumFractionDigits: 0 }).format(n)
 
-const TRUST_POINTS = [
-  { label: 'Verified sellers', desc: 'Every vendor passes KYC review before listing.' },
-  { label: 'Mobile money checkout', desc: 'Pay with MTN Mobile Money or Orange Money.' },
-  { label: 'Local delivery', desc: 'Tracked delivery from Tiko across the Southwest.' },
+const TRUST_POINTS_KEYS = [
+  { labelKey: 'trust.sellers_label', descKey: 'trust.sellers_desc' },
+  { labelKey: 'trust.momo_label', descKey: 'trust.momo_desc' },
+  { labelKey: 'trust.delivery_label', descKey: 'trust.delivery_desc' },
 ]
 
-const FEATURES = [
-  { icon: Truck, label: 'Free delivery', desc: 'On orders over 25,000 FCFA' },
-  { icon: ShieldCheck, label: 'Secure payments', desc: 'MTN & Orange Money, verified' },
-  { icon: RotateCcw, label: 'Easy returns', desc: '30-day return window' },
+const FEATURE_KEYS = [
+  { icon: Truck, labelKey: 'feature.delivery', descKey: 'feature.delivery_desc' },
+  { icon: ShieldCheck, labelKey: 'feature.secure', descKey: 'feature.secure_desc' },
+  { icon: RotateCcw, labelKey: 'feature.returns', descKey: 'feature.returns_desc' },
 ]
 
 const STATS = [
@@ -41,6 +42,7 @@ export default function HomePage() {
   const { addItem } = useCartStore()
   const { isAuthenticated, user } = useAuthStore()
   const { toast } = useToast()
+  const { t } = useLanguage()
   const [featuredProducts, setFeaturedProducts] = useState([])
   const [recommendations, setRecommendations]   = useState([])
   const [loading, setLoading]   = useState(true)
@@ -170,26 +172,23 @@ export default function HomePage() {
 
               {/* Headline */}
               <h1 className="font-display font-bold text-[clamp(2.4rem,5.5vw,4rem)] text-foreground leading-[1.04] tracking-tight mb-6 max-w-[580px]">
-                The marketplace built for how{' '}
-                <span className="text-accent">Cameroon</span>{' '}
-                shops.
+                {t('hero.title')}
               </h1>
 
               <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-8 max-w-[480px]">
-                Local sellers. Mobile money checkout. Tracked delivery across the Southwest.
-                One platform, zero friction.
+                {t('hero.subtitle')}
               </p>
 
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button size="lg" asChild className="px-7 font-medium">
                   <Link href="/products">
-                    Browse products
+                    {t('hero.browse')}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild className="px-7 font-medium">
-                  <Link href="/vendor/register">Sell on NexCart</Link>
+                  <Link href="/seller/register">{t('nav.seller')}</Link>
                 </Button>
               </div>
 
@@ -214,14 +213,14 @@ export default function HomePage() {
                   </span>
                 </div>
                 <ul className="divide-y divide-border">
-                  {TRUST_POINTS.map(({ label, desc }) => (
-                    <li key={label} className="px-5 py-4 flex gap-3 items-start">
+                  {TRUST_POINTS_KEYS.map(({ labelKey, descKey }) => (
+                    <li key={labelKey} className="px-5 py-4 flex gap-3 items-start">
                       <span className="mt-0.5 h-4 w-4 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
                         <Check className="h-2.5 w-2.5 text-accent" />
                       </span>
                       <div>
-                        <p className="text-sm font-medium text-foreground leading-snug">{label}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{desc}</p>
+                        <p className="text-sm font-medium text-foreground leading-snug">{t(labelKey)}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{t(descKey)}</p>
                       </div>
                     </li>
                   ))}
@@ -231,7 +230,7 @@ export default function HomePage() {
                     href="/products"
                     className="text-xs font-mono uppercase tracking-[0.12em] text-accent hover:text-accent/80 transition-colors inline-flex items-center gap-1"
                   >
-                    Start shopping
+                    {t('hero.browse')}
                     <ArrowUpRight className="h-3 w-3" />
                   </Link>
                 </div>
@@ -245,14 +244,14 @@ export default function HomePage() {
       <section className="border-b border-border">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="grid grid-cols-1 md:grid-cols-3 divide-y divide-border md:divide-y-0 md:divide-x md:divide-border">
-            {FEATURES.map(({ icon: Icon, label, desc }) => (
-              <div key={label} className="flex items-center gap-4 py-5 md:px-8 first:md:pl-0 last:md:pr-0">
+            {FEATURE_KEYS.map(({ icon: Icon, labelKey, descKey }) => (
+              <div key={labelKey} className="flex items-center gap-4 py-5 md:px-8 first:md:pl-0 last:md:pr-0">
                 <div className="h-9 w-9 rounded-md border border-border bg-muted flex items-center justify-center shrink-0">
                   <Icon className="h-4 w-4 text-accent" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-foreground">{label}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+                  <p className="text-sm font-semibold text-foreground">{t(labelKey)}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t(descKey)}</p>
                 </div>
               </div>
             ))}
@@ -265,7 +264,7 @@ export default function HomePage() {
         <section className="container mx-auto px-4 max-w-6xl py-8">
           <div className="bg-destructive/8 border border-destructive/20 rounded-md p-6 text-center animate-scale-in">
             <p className="text-destructive font-medium text-sm mb-4">{error}</p>
-            <Button size="sm" onClick={loadData} className="btn-press">Try again</Button>
+            <Button size="sm" onClick={loadData} className="btn-press">{t('common.retry')}</Button>
           </div>
         </section>
       )}
@@ -278,13 +277,13 @@ export default function HomePage() {
             <div className="flex items-end justify-between mb-8 pb-4 border-b border-border">
               <div>
                 <span className="font-mono text-xs uppercase tracking-[0.15em] text-accent">Catalog</span>
-                <h2 className="font-display font-semibold text-2xl md:text-3xl text-foreground mt-1">Featured products</h2>
+                <h2 className="font-display font-semibold text-2xl md:text-3xl text-foreground mt-1">{t('product.featured')}</h2>
               </div>
               <Link
                 href="/products"
                 className="text-xs font-mono uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 group"
               >
-                View all
+                {t('product.view_all')}
                 <ArrowUpRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </Link>
             </div>
@@ -351,10 +350,10 @@ export default function HomePage() {
                         disabled={!product.is_in_stock || isAdding}
                       >
                         {isAdding ? (
-                          <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />Adding…</>
+                          <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />{t('product.adding')}</>
                         ) : product.is_in_stock ? (
-                          <><ShoppingCart className="mr-1.5 h-3.5 w-3.5" />Add to cart</>
-                        ) : 'Out of stock'}
+                          <><ShoppingCart className="mr-1.5 h-3.5 w-3.5" />{t('product.add_cart')}</>
+                        ) : t('product.out_stock')}
                       </Button>
                     </div>
                   </div>
@@ -372,7 +371,7 @@ export default function HomePage() {
             <div className="flex items-end justify-between mb-8 pb-4 border-b border-border">
               <div>
                 <span className="font-mono text-xs uppercase tracking-[0.15em] text-accent">For you</span>
-                <h2 className="font-display font-semibold text-2xl md:text-3xl text-foreground mt-1">Recommended</h2>
+                <h2 className="font-display font-semibold text-2xl md:text-3xl text-foreground mt-1">{t('product.recommended')}</h2>
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -409,9 +408,9 @@ export default function HomePage() {
                         disabled={!product.is_in_stock || isAdding}
                       >
                         {isAdding ? (
-                          <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />Adding…</>
+                          <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />{t('product.adding')}</>
                         ) : (
-                          <><ShoppingCart className="mr-1.5 h-3.5 w-3.5" />Add to cart</>
+                          <><ShoppingCart className="mr-1.5 h-3.5 w-3.5" />{t('product.add_cart')}</>
                         )}
                       </Button>
                     </div>
@@ -432,10 +431,10 @@ export default function HomePage() {
                 Get started
               </span>
               <h2 className="font-display font-bold text-3xl md:text-4xl text-background leading-tight">
-                Ready to shop local?
+                {t('hero.cta_title')}
               </h2>
               <p className="text-background/60 mt-3 text-sm leading-relaxed">
-                Join shoppers across the Southwest already buying on NexCart — fast, secure, local.
+                {t('hero.cta_subtitle')}
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 shrink-0">
@@ -445,7 +444,7 @@ export default function HomePage() {
                 className="bg-accent text-accent-foreground hover:bg-accent/90 px-7 font-medium"
               >
                 <Link href="/products">
-                  Browse all products <ArrowRight className="ml-2 h-4 w-4" />
+                  {t('product.view_all')} <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button
@@ -454,7 +453,7 @@ export default function HomePage() {
                 asChild
                 className="border-background/20 text-background hover:bg-background/10 hover:text-background px-7 font-medium"
               >
-                <Link href="/vendor/register">Become a seller</Link>
+                <Link href="/seller/register">{t('seller.become')}</Link>
               </Button>
             </div>
           </div>

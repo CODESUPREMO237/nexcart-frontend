@@ -1,5 +1,5 @@
 // NexCart Service Worker — PWA + Offline Support
-const CACHE_NAME = 'nexcart-mAq4uoZYnnvfPkt57RMY3'
+const CACHE_NAME = 'nexcart-SCN3ZSsnqEdVSXXsbxM_V'
 const OFFLINE_URL = '/offline.html'
 
 const PRECACHE_URLS = [

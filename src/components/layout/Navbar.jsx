@@ -18,12 +18,14 @@ import { Badge } from '@/components/ui/badge'
 import useAuthStore from '@/store/authStore'
 import useCartStore from '@/store/cartStore'
 import { cn } from '@/lib/utils'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 import LanguageSwitcher from '@/components/features/LanguageSwitcher'
 import VisualSearch from '@/components/features/VisualSearch'
 
 export default function Navbar() {
   const router = useRouter()
   const pathname = usePathname()
+  const { t } = useLanguage()
   const { user, isAuthenticated, authReady, roleConfirmed, logout } = useAuthStore()
   const showUserUI = authReady
   const { totalItems, fetchCart } = useCartStore()
@@ -78,9 +80,9 @@ export default function Navbar() {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1">
             {[
-              { href: '/', icon: Home, label: 'Home' },
-              { href: '/products', icon: Package, label: 'Products' },
-              { href: '/categories', icon: Grid3x3, label: 'Categories' },
+              { href: '/', icon: Home, label: t('nav.home') },
+              { href: '/products', icon: Package, label: t('nav.products') },
+              { href: '/categories', icon: Grid3x3, label: t('nav.categories') },
             ].map(({ href, icon: Icon, label }) => (
               <Button
                 key={href}
@@ -107,7 +109,7 @@ export default function Navbar() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
                   type="search"
-                  placeholder="Search products…"
+                  placeholder={t('product.search')}
                   className="pl-9 h-9 text-sm"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -158,21 +160,21 @@ export default function Navbar() {
                     <p className="text-xs text-muted-foreground">{user?.email}</p>
                   </div>
                   <DropdownMenuItem asChild>
-                    <Link href="/profile"><User className="mr-2 h-3.5 w-3.5" />Profile</Link>
+                    <Link href="/profile"><User className="mr-2 h-3.5 w-3.5" />{t('nav.profile')}</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/orders"><History className="mr-2 h-3.5 w-3.5" />Order history</Link>
+                    <Link href="/orders"><History className="mr-2 h-3.5 w-3.5" />{t('nav.orders')}</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/wishlist"><Heart className="mr-2 h-3.5 w-3.5" />Wishlist</Link>
+                    <Link href="/wishlist"><Heart className="mr-2 h-3.5 w-3.5" />{t('nav.wishlist')}</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/messages"><MessageCircle className="mr-2 h-3.5 w-3.5" />Messages</Link>
+                    <Link href="/messages"><MessageCircle className="mr-2 h-3.5 w-3.5" />{t('nav.messages')}</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   {roleConfirmed && (user?.role === 'seller' || user?.role === 'vendor') && (
                     <DropdownMenuItem asChild>
-                      <Link href="/seller/dashboard"><Store className="mr-2 h-3.5 w-3.5" />Seller dashboard</Link>
+                      <Link href="/seller/dashboard"><Store className="mr-2 h-3.5 w-3.5" />{t('seller.dashboard')}</Link>
                     </DropdownMenuItem>
                   )}
                   {roleConfirmed && (user?.is_staff || user?.role === 'admin') && (
@@ -187,14 +189,14 @@ export default function Navbar() {
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-                    Logout
+                    {t('nav.logout')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               showUserUI && (
                 <Button size="sm" asChild className="hidden md:inline-flex h-8 px-4 text-xs">
-                  <Link href="/login">Sign in</Link>
+                  <Link href="/login">{t('nav.login')}</Link>
                 </Button>
               )
             )}
@@ -213,16 +215,16 @@ export default function Navbar() {
             <form onSubmit={handleSearch}>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                <Input type="search" placeholder="Search products…" className="pl-9 h-9 text-sm"
+                <Input type="search" placeholder={t('product.search')} className="pl-9 h-9 text-sm"
                   value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
               </div>
             </form>
 
             <nav className="flex flex-col gap-1">
               {[
-                { href: '/', icon: Home, label: 'Home' },
-                { href: '/products', icon: Package, label: 'Products' },
-                { href: '/categories', icon: Grid3x3, label: 'Categories' },
+                { href: '/', icon: Home, label: t('nav.home') },
+                { href: '/products', icon: Package, label: t('nav.products') },
+                { href: '/categories', icon: Grid3x3, label: t('nav.categories') },
               ].map(({ href, icon: Icon, label }) => (
                 <Button key={href} variant="ghost" size="sm" asChild className="justify-start text-sm">
                   <Link href={href} onClick={() => setMobileMenuOpen(false)}>
@@ -234,9 +236,9 @@ export default function Navbar() {
               {showUserUI && isAuthenticated && (
                 <>
                   {[
-                    { href: '/wishlist', icon: Heart, label: 'Wishlist' },
-                    { href: '/profile', icon: User, label: 'Profile' },
-                    { href: '/orders', icon: Package, label: 'Orders' },
+                    { href: '/wishlist', icon: Heart, label: t('nav.wishlist') },
+                    { href: '/profile', icon: User, label: t('nav.profile') },
+                    { href: '/orders', icon: Package, label: t('nav.orders') },
                   ].map(({ href, icon: Icon, label }) => (
                     <Button key={href} variant="ghost" size="sm" asChild className="justify-start text-sm">
                       <Link href={href} onClick={() => setMobileMenuOpen(false)}>
@@ -247,7 +249,7 @@ export default function Navbar() {
                   {roleConfirmed && (user?.role === 'seller' || user?.role === 'vendor') && (
                     <Button variant="ghost" size="sm" asChild className="justify-start text-sm">
                       <Link href="/seller/dashboard" onClick={() => setMobileMenuOpen(false)}>
-                        <Store className="h-4 w-4 mr-2" />Seller dashboard
+                        <Store className="h-4 w-4 mr-2" />{t('seller.dashboard')}
                       </Link>
                     </Button>
                   )}
@@ -261,14 +263,14 @@ export default function Navbar() {
                   <Button variant="ghost" size="sm"
                     className="justify-start text-sm text-destructive hover:text-destructive"
                     onClick={() => { handleLogout(); setMobileMenuOpen(false) }}>
-                    Logout
+                    {t('nav.logout')}
                   </Button>
                 </>
               )}
 
               {showUserUI && !isAuthenticated && (
                 <Button size="sm" asChild className="w-full mt-2">
-                  <Link href="/login" onClick={() => setMobileMenuOpen(false)}>Sign in</Link>
+                  <Link href="/login" onClick={() => setMobileMenuOpen(false)}>{t('nav.login')}</Link>
                 </Button>
               )}
             </nav>

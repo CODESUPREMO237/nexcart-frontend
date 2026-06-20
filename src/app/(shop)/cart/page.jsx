@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import { useToast } from '@/hooks/useToast'
 import useAuthStore from '@/store/authStore'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -18,6 +19,7 @@ const fcfa = (n) =>
 export default function CartPage() {
   const router = useRouter()
   const { toast } = useToast()
+  const { t } = useLanguage()
   const { isAuthenticated, authReady, checkAuth } = useAuthStore()
   const [cart, setCart] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -31,7 +33,7 @@ export default function CartPage() {
       setCart(cartData)
     } catch (error) {
       if (error.response?.status === 401) { router.push('/login?redirect=/cart'); return }
-      toast({ title: 'Error', description: 'Failed to load cart', variant: 'destructive' })
+      toast({ title: t('common.error'), description: 'Failed to load cart', variant: 'destructive' })
     } finally {
       setLoading(false)
     }
@@ -96,10 +98,10 @@ export default function CartPage() {
           <div className="w-16 h-16 rounded-md border border-border bg-muted flex items-center justify-center mx-auto mb-5">
             <ShoppingBag className="w-7 h-7 text-muted-foreground" />
           </div>
-          <h1 className="font-display font-bold text-2xl text-foreground mb-2">Your cart is empty</h1>
-          <p className="text-sm text-muted-foreground mb-7">You haven&apos;t added any items yet.</p>
+          <h1 className="font-display font-bold text-2xl text-foreground mb-2">{t('cart.empty')}</h1>
+          <p className="text-sm text-muted-foreground mb-7">{t('cart.empty_desc')}</p>
           <Button size="sm" asChild className="btn-press">
-            <Link href="/products">Start shopping <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
+            <Link href="/products">{t('cart.start_shopping')} <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
           </Button>
         </div>
       </div>
@@ -112,7 +114,7 @@ export default function CartPage() {
       <div className="mb-8 pb-4 border-b border-border">
         <span className="font-mono text-xs uppercase tracking-[0.15em] text-accent">Shopping</span>
         <h1 className="font-display font-bold text-2xl md:text-3xl text-foreground mt-1">
-          My Cart <span className="text-muted-foreground font-normal text-lg">({cartItems.length})</span>
+          {t('cart.title')} <span className="text-muted-foreground font-normal text-lg">({cartItems.length})</span>
         </h1>
       </div>
 
@@ -177,12 +179,12 @@ export default function CartPage() {
                         <p className="font-mono font-semibold text-foreground">
                           {fcfa(parseFloat(item.product.price) * item.quantity)}
                         </p>
-                        <p className="text-xs text-muted-foreground font-mono">{fcfa(item.product.price)} / unit</p>
+                        <p className="text-xs text-muted-foreground font-mono">{fcfa(item.product.price)} / {t('cart.unit')}</p>
                       </div>
                     </div>
 
                     {item.product.stock_quantity < 10 && (
-                      <p className="text-xs text-destructive mt-2">Only {item.product.stock_quantity} left in stock</p>
+                      <p className="text-xs text-destructive mt-2">{t('cart.low_stock').replace('{n}', item.product.stock_quantity)}</p>
                     )}
                   </div>
                 </div>
@@ -199,35 +201,35 @@ export default function CartPage() {
             </div>
             <div className="p-5 space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Subtotal ({cartItems.length} item{cartItems.length > 1 ? 's' : ''})</span>
+                <span className="text-muted-foreground">{t('cart.subtotal')} ({cartItems.length} {t('cart.item_count')}{cartItems.length > 1 ? 's' : ''})</span>
                 <span className="font-mono font-medium">{fcfa(subtotal)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Delivery</span>
+                <span className="text-muted-foreground">{t('cart.delivery')}</span>
                 <span className="font-mono font-medium">
                   {shipping === 0
-                    ? <span className="text-foreground font-semibold">FREE</span>
+                    ? <span className="text-foreground font-semibold">{t('delivery.free')}</span>
                     : fcfa(shipping)}
                 </span>
               </div>
               {subtotal < 25000 && (
                 <div className="bg-muted border border-border rounded-md p-3">
                   <p className="text-xs text-muted-foreground">
-                    Add <span className="font-mono font-semibold text-foreground">{fcfa(25000 - subtotal)}</span> more for free delivery
+                    Add <span className="font-mono font-semibold text-foreground">{fcfa(25000 - subtotal)}</span> {t('cart.add_more_free')}
                   </p>
                 </div>
               )}
               <div className="border-t border-border pt-3 flex justify-between items-baseline">
-                <span className="font-semibold text-foreground">Total</span>
+                <span className="font-semibold text-foreground">{t('cart.total')}</span>
                 <span className="font-mono font-bold text-xl text-foreground">{fcfa(total)}</span>
               </div>
             </div>
             <div className="px-5 pb-5 space-y-2">
               <Button size="sm" className="w-full btn-press" onClick={() => router.push('/checkout')}>
-                Proceed to checkout <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                {t('cart.checkout')} <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
               </Button>
               <Button variant="outline" size="sm" className="w-full btn-press" asChild>
-                <Link href="/products">Continue shopping</Link>
+                <Link href="/products">{t('cart.continue_shopping')}</Link>
               </Button>
             </div>
           </div>

@@ -6,22 +6,24 @@ import { ShoppingCart, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Github
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useState } from 'react'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
-const SHOP_LINKS = [
-  { href: '/products', label: 'All Products' },
-  { href: '/categories', label: 'Categories' },
-  { href: '/orders', label: 'My Orders' },
-  { href: '/wishlist', label: 'My Wishlist' },
+const SHOP_LINK_KEYS = [
+  { href: '/products', key: 'footer.all_products' },
+  { href: '/categories', key: 'nav.categories' },
+  { href: '/orders', key: 'nav.orders' },
+  { href: '/wishlist', key: 'nav.wishlist' },
 ]
 
-const SERVICE_LINKS = [
-  { href: '/about', label: 'About Us' },
-  { href: '/contact', label: 'Contact Us' },
-  { href: '/shipping', label: 'Shipping' },
-  { href: '/returns', label: 'Returns & Exchanges' },
+const SERVICE_LINK_KEYS = [
+  { href: '/about', key: 'footer.about' },
+  { href: '/contact', key: 'footer.contact' },
+  { href: '/shipping', key: 'footer.shipping' },
+  { href: '/returns', key: 'footer.returns' },
 ]
 
 export default function Footer() {
+  const { t } = useLanguage()
   const [email, setEmail] = useState('')
 
   const handleNewsletterSubmit = (e) => {
@@ -43,7 +45,7 @@ export default function Footer() {
               <span className="font-display font-bold text-lg text-foreground tracking-tight">NexCart</span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-[200px]">
-              Cameroon's marketplace built for how people actually shop — local, mobile, simple.
+              {t('footer.tagline')}
             </p>
             <div className="flex gap-2">
               {[Facebook, Twitter, Instagram, Github].map((Icon, i) => (
@@ -56,12 +58,12 @@ export default function Footer() {
 
           {/* Shop */}
           <div>
-            <p className="font-mono text-xs uppercase tracking-[0.15em] text-foreground mb-4">Shop</p>
+            <p className="font-mono text-xs uppercase tracking-[0.15em] text-foreground mb-4">{t('footer.shop')}</p>
             <ul className="space-y-2.5">
-              {SHOP_LINKS.map(({ href, label }) => (
+              {SHOP_LINK_KEYS.map(({ href, key }) => (
                 <li key={href}>
                   <Link href={href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    {label}
+                    {t(key)}
                   </Link>
                 </li>
               ))}
@@ -70,12 +72,12 @@ export default function Footer() {
 
           {/* Support */}
           <div>
-            <p className="font-mono text-xs uppercase tracking-[0.15em] text-foreground mb-4">Support</p>
+            <p className="font-mono text-xs uppercase tracking-[0.15em] text-foreground mb-4">{t('footer.support')}</p>
             <ul className="space-y-2.5">
-              {SERVICE_LINKS.map(({ href, label }) => (
+              {SERVICE_LINK_KEYS.map(({ href, key }) => (
                 <li key={href}>
                   <Link href={href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    {label}
+                    {t(key)}
                   </Link>
                 </li>
               ))}
@@ -84,9 +86,9 @@ export default function Footer() {
 
           {/* Newsletter + Contact */}
           <div>
-            <p className="font-mono text-xs uppercase tracking-[0.15em] text-foreground mb-4">Newsletter</p>
+            <p className="font-mono text-xs uppercase tracking-[0.15em] text-foreground mb-4">{t('footer.newsletter')}</p>
             <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-              Get offers and updates delivered to your inbox.
+              {t('footer.newsletter_desc')}
             </p>
             <form onSubmit={handleNewsletterSubmit} className="space-y-2 mb-6">
               <Input
@@ -97,7 +99,7 @@ export default function Footer() {
                 required
                 className="h-9 text-sm"
               />
-              <Button type="submit" size="sm" className="w-full btn-press">Subscribe</Button>
+              <Button type="submit" size="sm" className="w-full btn-press">{t('footer.subscribe')}</Button>
             </form>
             <ul className="space-y-2.5">
               {[
@@ -120,9 +122,9 @@ export default function Footer() {
             © {new Date().getFullYear()} NexCart · Tiko, Cameroon 🇨🇲
           </p>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+            <Link href="/privacy" className="hover:text-foreground transition-colors">{t('footer.privacy')}</Link>
             <span className="text-border">·</span>
-            <Link href="/terms" className="hover:text-foreground transition-colors">Terms of Use</Link>
+            <Link href="/terms" className="hover:text-foreground transition-colors">{t('footer.terms')}</Link>
           </div>
         </div>
       </div>
